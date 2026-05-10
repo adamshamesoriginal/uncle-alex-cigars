@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNCLE ALEX | Luxury Cigars from Costa Rica & Cuba</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Raleway:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #C9A84C;
+            --gold-light: #E8C96A;
+            --gold-dark: #8B6914;
+            --gold-pale: #F0E0A8;
+            --black: #060503;
+            --dark: #0C0906;
+            --dark-mid: #181210;
+            --brown: #2D1E12;
+            --amber: #8B4513;
+            --cream: #F5F0E6;
+            --cream-dim: #C8BDA8;
+            --green-cr: #2A4A2A;
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: #060503;
+            color: var(--cream);
+            font-family: 'Raleway', sans-serif;
+            font-weight: 300;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* ── CURSOR ── */
+        .cursor { width: 8px; height: 8px; background: var(--gold); border-radius: 50%; position: fixed; top:0; left:0; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); }
+        .cursor-ring { width:38px; height:38px; border:1px solid var(--gold); border-radius:50%; position:fixed; top:0; left:0; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:all 0.15s ease; opacity:0.55; }
+        .cursor-ring.hov { width:64px; height:64px; opacity:0.2; background:rgba(201,168,76,0.07); }
+
+        /* ── PRELOADER ── */
+        #preloader { position:fixed; inset:0; background:#060503; z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; }
+        .pl-name { font-family:'Cormorant Garamond',serif; font-size:clamp(2rem,5vw,3.8rem); font-weight:300; letter-spacing:0.45em; color:var(--gold); opacity:0; animation:plFade 1s ease 0.3s forwards; }
+        .pl-sub { font-size:0.58rem; letter-spacing:0.45em; text-transform:uppercase; color:var(--cream-dim); opacity:0; animation:plFade 1s ease 1.1s forwards; }
+        .pl-line { width:0; height:1px; background:var(--gold); animation:plLine 1.5s ease 0.7s forwards; }
+        @keyframes plFade { to{opacity:1} }
+        @keyframes plLine { to{width:160px} }
+
+        /* ── NAV ── */
+        nav { position:fixed; top:0; left:0; right:0; z-index:1000; padding:26px 6%; display:flex; align-items:center; justify-content:space-between; transition:all 0.4s; }
+        nav.stuck { background:rgba(6,5,3,0.97); backdrop-filter:blur(14px); padding:14px 6%; border-bottom:1px solid rgba(201,168,76,0.12); }
+        .nav-brand { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:400; letter-spacing:0.3em; color:var(--gold); text-decoration:none; text-transform:uppercase; }
+        .nav-brand span { font-style:italic; }
+        .nav-links { display:flex; gap:40px; list-style:none; }
+        .nav-links a { font-size:0.6rem; letter-spacing:0.28em; text-transform:uppercase; color:var(--cream-dim); text-decoration:none; transition:color 0.3s; position:relative; }
+        .nav-links a::after { content:''; position:absolute; bottom:-4px; left:0; width:0; height:1px; background:var(--gold); transition:width 0.3s; }
+        .nav-links a:hover { color:var(--gold); }
+        .nav-links a:hover::after { width:100%; }
+        .nav-cta { font-size:0.6rem; letter-spacing:0.22em; text-transform:uppercase; color:#060503; background:var(--gold); padding:12px 26px; text-decoration:none; transition:all 0.3s; cursor:none; }
+        .nav-cta:hover { background:var(--gold-light); transform:translateY(-1px); }
+        .nav-hamburger { display:none; flex-direction:column; gap:5px; cursor:none; }
+        .nav-hamburger span { width:24px; height:1px; background:var(--gold); transition:all 0.3s; }
+
+        /* ── HERO ── */
+        #hero { position:relative; width:100%; height:100vh; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+        .hero-vid { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0.4; }
+        .hero-veil { position:absolute; inset:0; background:linear-gradient(to bottom, rgba(6,5,3,0.4) 0%, rgba(6,5,3,0.08) 30%, rgba(6,5,3,0.6) 70%, rgba(6,5,3,1) 100%); }
+        #smoke { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:2; }
+        .hero-cnt { position:relative; z-index:3; text-align:center; padding:0 24px; }
+        .hero-tag { font-size:0.56rem; letter-spacing:0.65em; text-transform:uppercase; color:var(--gold); margin-bottom:22px; opacity:0; transform:translateY(18px); }
+        .hero-h1 { font-family:'Cormorant Garamond',serif; font-size:clamp(3rem,8.5vw,8rem); font-weight:300; line-height:0.95; letter-spacing:0.1em; color:var(--cream); text-transform:uppercase; margin-bottom:26px; opacity:0; transform:translateY(28px); }
+        .hero-h1 em { font-style:italic; color:var(--gold); display:block; font-size:1.15em; }
+        .hero-p { font-size:0.72rem; letter-spacing:0.38em; text-transform:uppercase; color:var(--cream-dim); margin-bottom:48px; opacity:0; transform:translateY(18px); }
+        .hero-btns { display:flex; gap:18px; justify-content:center; opacity:0; transform:translateY(18px); }
+        .btn-g { font-size:0.62rem; letter-spacing:0.26em; text-transform:uppercase; color:#060503; background:var(--gold); padding:16px 44px; text-decoration:none; transition:all 0.3s; cursor:none; }
+        .btn-g:hover { background:var(--gold-light); transform:translateY(-2px); }
+        .btn-o { font-size:0.62rem; letter-spacing:0.26em; text-transform:uppercase; color:var(--cream); border:1px solid rgba(245,240,230,0.32); padding:16px 44px; text-decoration:none; transition:all 0.3s; cursor:none; }
+        .btn-o:hover { border-color:var(--gold); color:var(--gold); }
+        .hero-scroll { position:absolute; bottom:32px; left:50%; transform:translateX(-50%); z-index:3; display:flex; flex-direction:column; align-items:center; gap:7px; opacity:0; }
+        .hero-scroll span { font-size:0.5rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--cream-dim); }
+        .s-bar { width:1px; height:46px; background:linear-gradient(to bottom,var(--gold),transparent); animation:sPulse 2s ease infinite; }
+        @keyframes sPulse { 0%,100%{opacity:1;transform:scaleY(1)} 50%{opacity:0.25;transform:scaleY(0.5)} }
+
+        /* ── SHARED ── */
+        .lbl { display:block; font-size:0.5rem; letter-spacing:0.52em; text-transform:uppercase; color:var(--gold); margin-bottom:16px; }
+        .h2 { font-family:'Cormorant Garamond',serif; font-size:clamp(2rem,4vw,4.2rem); font-weight:300; line-height:1.1; color:var(--cream); }
+        .h2 em { font-style:italic; color:var(--gold); }
+        .divider { width:52px; height:1px; background:var(--gold); margin:24px 0; }
+        .body-t { font-size:0.86rem; line-height:1.95; color:var(--cream-dim); max-width:490px; }
+
+        /* ── CHARACTER SECTION ── */
+        #character { position:relative; overflow:hidden; min-height:100vh; display:grid; grid-template-columns:1fr 1fr; }
+        .char-img-wrap { position:relative; overflow:hidden; }
+        .char-img { width:100%; height:100%; object-fit:cover; object-position:center top; display:block; filter:contrast(1.05) sepia(8%); min-height:600px; }
+        .char-img-veil { position:absolute; inset:0; background:linear-gradient(to right, transparent 55%, rgba(6,5,3,1) 100%); }
+        .char-text { padding:100px 7% 100px 5%; display:flex; flex-direction:column; justify-content:center; background:rgba(6,5,3,1); }
+        .char-quote { font-family:'Cormorant Garamond',serif; font-size:clamp(1.4rem,2.5vw,2.2rem); font-style:italic; font-weight:300; color:var(--gold-pale); line-height:1.5; margin-bottom:32px; border-left:2px solid var(--gold); padding-left:24px; }
+        .char-sig { font-family:'Cormorant Garamond',serif; font-size:2.8rem; font-weight:300; color:var(--gold); letter-spacing:0.08em; margin-top:40px; }
+        .char-sig-sub { font-size:0.58rem; letter-spacing:0.38em; text-transform:uppercase; color:var(--cream-dim); margin-top:6px; }
+        .char-stats { display:flex; gap:40px; margin-top:44px; padding-top:36px; border-top:1px solid rgba(201,168,76,0.15); }
+        .cst-n { font-family:'Cormorant Garamond',serif; font-size:2.6rem; font-weight:300; color:var(--gold); line-height:1; }
+        .cst-l { font-size:0.56rem; letter-spacing:0.24em; text-transform:uppercase; color:var(--cream-dim); margin-top:4px; }
+
+        /* ── COLLECTION ── */
+        #collection { padding:130px 6%; background:var(--dark); }
+        .col-hdr { text-align:center; margin-bottom:70px; }
+        .col-hdr .divider { margin:24px auto; }
+        .col-hdr .body-t { margin:0 auto; text-align:center; }
+        .col-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
+        .pcard { position:relative; overflow:hidden; aspect-ratio:3/4; background:var(--dark-mid); cursor:none; transform-style:preserve-3d; transition:transform 0.15s; }
+        .pcard-photo { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform 0.6s ease; filter:brightness(0.75) sepia(10%); }
+        .pcard:hover .pcard-photo { transform:scale(1.06); filter:brightness(0.85) sepia(5%); }
+        .pcard-fallback { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+        .pcard-veil { position:absolute; inset:0; background:linear-gradient(to bottom, rgba(6,5,3,0.1) 0%, rgba(6,5,3,0.4) 50%, rgba(6,5,3,0.97) 100%); }
+        .pcard-tag { position:absolute; top:20px; right:0; background:var(--gold); color:#060503; font-size:0.48rem; letter-spacing:0.28em; text-transform:uppercase; padding:5px 14px; z-index:2; }
+        .pcard-content { position:absolute; bottom:0; left:0; right:0; padding:28px; z-index:2; transform:translateY(50px); transition:transform 0.45s cubic-bezier(0.16,1,0.3,1); }
+        .pcard:hover .pcard-content { transform:translateY(0); }
+        .pcard-flag { display:flex; gap:8px; margin-bottom:10px; }
+        .flag { font-size:0.46rem; letter-spacing:0.28em; text-transform:uppercase; padding:3px 10px; border:1px solid rgba(201,168,76,0.4); color:var(--gold); }
+        .pcard-name { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:400; color:var(--cream); margin-bottom:4px; }
+        .pcard-origin { font-size:0.56rem; letter-spacing:0.28em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
+        .pcard-desc { font-size:0.76rem; line-height:1.7; color:var(--cream-dim); margin-bottom:18px; opacity:0; transform:translateY(8px); transition:all 0.35s ease 0.08s; }
+        .pcard:hover .pcard-desc { opacity:1; transform:translateY(0); }
+        .pcard-foot { display:flex; align-items:center; justify-content:space-between; }
+        .pcard-price { font-family:'Cormorant Garamond',serif; font-size:1.4rem; color:var(--gold); }
+        .pcard-price sup { font-size:0.62rem; }
+        .pcard-btn { font-size:0.5rem; letter-spacing:0.26em; text-transform:uppercase; color:#060503; background:var(--gold); padding:10px 18px; border:none; cursor:none; transition:background 0.3s; }
+        .pcard-btn:hover { background:var(--gold-light); }
+
+        /* ── MARQUEE ── */
+        .marquee { padding:34px 0; overflow:hidden; border-top:1px solid rgba(201,168,76,0.1); border-bottom:1px solid rgba(201,168,76,0.1); background:var(--dark); }
+        .mq { display:flex; gap:70px; animation:mq 24s linear infinite; width:max-content; }
+        .mq-i { font-family:'Cormorant Garamond',serif; font-size:0.92rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--cream-dim); white-space:nowrap; display:flex; align-items:center; gap:70px; }
+        .mq-i::after { content:'✦'; color:var(--gold); font-size:0.5rem; }
+        @keyframes mq { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+        /* ── STORY / CRAFT ── */
+        #story { padding:130px 6%; display:grid; grid-template-columns:1fr 1fr; gap:9%; align-items:center; }
+        .story-vid { position:relative; }
+        .story-vid video { width:100%; aspect-ratio:9/16; object-fit:cover; display:block; filter:sepia(12%) contrast(1.04); }
+        .story-vid::after { content:''; position:absolute; inset:0; background:linear-gradient(to bottom,transparent 55%,rgba(6,5,3,0.75)); }
+        .story-frame { position:absolute; top:-14px; left:-14px; right:14px; bottom:14px; border:1px solid rgba(201,168,76,0.16); pointer-events:none; z-index:-1; }
+        .story-steps { margin-top:42px; display:flex; flex-direction:column; gap:26px; }
+        .s-step { display:flex; gap:18px; align-items:flex-start; padding-bottom:26px; border-bottom:1px solid rgba(201,168,76,0.07); }
+        .s-step:last-child { border-bottom:none; }
+        .s-n { font-family:'Cormorant Garamond',serif; font-size:2.2rem; font-weight:300; color:rgba(201,168,76,0.17); line-height:1; min-width:34px; }
+        .s-ttl { font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:400; color:var(--cream); margin-bottom:5px; }
+        .s-dsc { font-size:0.76rem; line-height:1.85; color:var(--cream-dim); }
+
+        /* ── SHOP ── */
+        #shop { padding:130px 6%; background:var(--dark); }
+        .shop-hdr { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:56px; }
+        .shop-filters { display:flex; gap:26px; }
+        .filt { font-size:0.56rem; letter-spacing:0.28em; text-transform:uppercase; color:var(--cream-dim); background:none; border:none; cursor:none; padding:7px 0; border-bottom:1px solid transparent; transition:all 0.3s; }
+        .filt.on, .filt:hover { color:var(--gold); border-bottom-color:var(--gold); }
+        .shop-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+        .si { background:var(--dark-mid); overflow:hidden; transition:transform 0.3s; cursor:none; }
+        .si:hover { transform:translateY(-4px); }
+        .si-img { aspect-ratio:4/3; overflow:hidden; position:relative; }
+        .si-img img { width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.5s ease; filter:brightness(0.8) sepia(8%); }
+        .si:hover .si-img img { transform:scale(1.06); filter:brightness(0.9) sepia(4%); }
+        .si-fallback { position:absolute; inset:0; background:linear-gradient(135deg,#1A1208,#2D1E0E); display:flex; align-items:center; justify-content:center; }
+        .si-glyph { font-family:'Cormorant Garamond',serif; font-size:2.6rem; color:var(--gold); opacity:0.45; }
+        .si-pat { position:absolute; inset:0; opacity:0.035; background:repeating-linear-gradient(45deg,var(--gold) 0,var(--gold) 1px,transparent 1px,transparent 16px); }
+        .si-body { padding:16px; }
+        .si-cat { font-size:0.46rem; letter-spacing:0.38em; text-transform:uppercase; color:var(--gold); margin-bottom:4px; }
+        .si-name { font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--cream); margin-bottom:3px; }
+        .si-detail { font-size:0.66rem; color:var(--cream-dim); margin-bottom:13px; }
+        .si-foot { display:flex; align-items:center; justify-content:space-between; }
+        .si-price { font-family:'Cormorant Garamond',serif; font-size:1.2rem; color:var(--gold); }
+        .si-add { width:32px; height:32px; background:var(--gold); border:none; cursor:none; display:flex; align-items:center; justify-content:center; font-size:1.1rem; color:#060503; transition:background 0.3s; }
+        .si-add:hover { background:var(--gold-light); }
+
+        /* ── ORIGINS SPLIT ── */
+        #origins { display:grid; grid-template-columns:1fr 1fr; min-height:480px; }
+        .origin { padding:80px 7%; display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden; }
+        .origin-cr { background:linear-gradient(135deg, #0D1A0D, #0A1208); }
+        .origin-cu { background:linear-gradient(135deg, #1A0D08, #120804); }
+        .origin-icon { font-size:3.5rem; margin-bottom:20px; }
+        .origin h3 { font-family:'Cormorant Garamond',serif; font-size:clamp(1.5rem,3vw,2.8rem); font-weight:300; color:var(--cream); margin-bottom:16px; }
+        .origin h3 em { font-style:italic; color:var(--gold); }
+        .origin p { font-size:0.82rem; line-height:1.9; color:var(--cream-dim); max-width:380px; }
+        .origin-divider { position:absolute; top:0; bottom:0; right:0; width:1px; background:linear-gradient(to bottom,transparent,rgba(201,168,76,0.3),transparent); }
+        .origin-bg { position:absolute; top:-40px; right:-40px; width:200px; height:200px; border:1px solid rgba(201,168,76,0.06); border-radius:50%; }
+        .origin-bg2 { position:absolute; bottom:-60px; left:-60px; width:250px; height:250px; border:1px solid rgba(201,168,76,0.04); border-radius:50%; }
+
+        /* ── TESTIMONIALS ── */
+        #testimonials { padding:130px 6%; background:var(--dark); }
+        .t-hdr { text-align:center; margin-bottom:70px; }
+        .t-hdr .divider { margin:24px auto; }
+        .t-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+        .tc { padding:36px; border:1px solid rgba(201,168,76,0.09); position:relative; transition:border-color 0.3s; }
+        .tc:hover { border-color:rgba(201,168,76,0.25); }
+        .tc-stars { position:absolute; top:34px; right:34px; color:var(--gold); font-size:0.6rem; letter-spacing:2px; }
+        .tc-q { font-family:'Cormorant Garamond',serif; font-size:3.8rem; color:var(--gold); opacity:0.22; line-height:1; margin-bottom:10px; }
+        .tc-txt { font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-style:italic; line-height:1.75; color:var(--cream); margin-bottom:26px; }
+        .tc-auth { display:flex; align-items:center; gap:13px; }
+        .tc-av { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--gold-dark),var(--gold)); display:flex; align-items:center; justify-content:center; font-family:'Cormorant Garamond',serif; font-size:1rem; color:#060503; }
+        .tc-name { font-size:0.7rem; font-weight:500; color:var(--cream); }
+        .tc-title { font-size:0.55rem; letter-spacing:0.18em; color:var(--gold); }
+
+        /* ── EXPERIENCE ── */
+        #experience { padding:130px 6%; text-align:center; position:relative; }
+        #experience::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at center,rgba(201,168,76,0.035) 0%,transparent 68%); }
+        .exp-inner { position:relative; z-index:1; max-width:660px; margin:0 auto; }
+        .exp-h { font-family:'Cormorant Garamond',serif; font-size:clamp(2rem,5vw,5rem); font-weight:300; line-height:1.1; color:var(--cream); margin-bottom:26px; }
+        .exp-h em { font-style:italic; color:var(--gold); }
+        .exp-p { font-size:0.86rem; line-height:2; color:var(--cream-dim); margin-bottom:40px; }
+        .exp-feats { display:flex; justify-content:center; gap:52px; margin-top:56px; }
+        .ef { display:flex; flex-direction:column; align-items:center; gap:12px; }
+        .ef-ic { width:54px; height:54px; border:1px solid rgba(201,168,76,0.25); display:flex; align-items:center; justify-content:center; font-size:1.25rem; color:var(--gold); }
+        .ef-t { font-family:'Cormorant Garamond',serif; font-size:0.95rem; color:var(--cream); }
+        .ef-d { font-size:0.64rem; color:var(--cream-dim); text-align:center; max-width:105px; }
+
+        /* ── NEWSLETTER ── */
+        #newsletter { padding:88px 6%; text-align:center; border-top:1px solid rgba(201,168,76,0.08); }
+        .nl-h { font-family:'Cormorant Garamond',serif; font-size:clamp(1.5rem,3vw,2.6rem); font-weight:300; color:var(--cream); margin-bottom:10px; }
+        .nl-h em { font-style:italic; color:var(--gold); }
+        .nl-p { font-size:0.76rem; color:var(--cream-dim); margin-bottom:32px; }
+        .nl-form { display:flex; max-width:440px; margin:0 auto; }
+        .nl-in { flex:1; padding:14px 20px; background:var(--dark-mid); border:1px solid rgba(201,168,76,0.16); border-right:none; color:var(--cream); font-family:'Raleway',sans-serif; font-size:0.76rem; outline:none; }
+        .nl-in::placeholder { color:var(--cream-dim); opacity:0.45; }
+        .nl-in:focus { border-color:var(--gold); }
+        .nl-btn { padding:14px 26px; background:var(--gold); border:none; color:#060503; font-family:'Raleway',sans-serif; font-size:0.56rem; letter-spacing:0.26em; text-transform:uppercase; cursor:none; transition:background 0.3s; }
+        .nl-btn:hover { background:var(--gold-light); }
+
+        /* ── FOOTER ── */
+        footer { padding:72px 6% 32px; background:#060503; border-top:1px solid rgba(201,168,76,0.08); }
+        .ft { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:5%; margin-bottom:52px; }
+        .ft-brand { font-family:'Cormorant Garamond',serif; font-size:1.75rem; font-weight:300; letter-spacing:0.35em; color:var(--gold); margin-bottom:14px; }
+        .ft-d { font-size:0.76rem; line-height:1.85; color:var(--cream-dim); max-width:230px; margin-bottom:26px; }
+        .ft-soc { display:flex; gap:10px; }
+        .ft-s { width:32px; height:32px; border:1px solid rgba(201,168,76,0.25); display:flex; align-items:center; justify-content:center; color:var(--cream-dim); text-decoration:none; font-size:0.62rem; transition:all 0.3s; }
+        .ft-s:hover { border-color:var(--gold); color:var(--gold); }
+        .ft-ct { font-size:0.56rem; letter-spacing:0.36em; text-transform:uppercase; color:var(--gold); margin-bottom:18px; }
+        .ft-ul { list-style:none; display:flex; flex-direction:column; gap:9px; }
+        .ft-ul a { font-size:0.76rem; color:var(--cream-dim); text-decoration:none; transition:color 0.3s; }
+        .ft-ul a:hover { color:var(--cream); }
+        .ft-bot { padding-top:32px; border-top:1px solid rgba(201,168,76,0.07); display:flex; justify-content:space-between; align-items:center; }
+        .ft-copy { font-size:0.6rem; color:var(--cream-dim); opacity:0.5; }
+        .ft-leg { display:flex; gap:24px; }
+        .ft-leg a { font-size:0.6rem; color:var(--cream-dim); text-decoration:none; opacity:0.5; transition:opacity 0.3s; }
+        .ft-leg a:hover { opacity:1; }
+
+        /* ── REVEAL ── */
+        .rv { opacity:0; transform:translateY(34px); transition:opacity 0.85s ease, transform 0.85s ease; }
+        .rv.in { opacity:1; transform:translateY(0); }
+        .rv-l { opacity:0; transform:translateX(-30px); transition:opacity 0.85s ease, transform 0.85s ease; }
+        .rv-l.in { opacity:1; transform:translateX(0); }
+        .rv-r { opacity:0; transform:translateX(30px); transition:opacity 0.85s ease, transform 0.85s ease; }
+        .rv-r.in { opacity:1; transform:translateX(0); }
+
+        /* ── RESPONSIVE ── */
+        @media(max-width:1100px) {
+            .col-grid { grid-template-columns:repeat(2,1fr); }
+            .shop-grid { grid-template-columns:repeat(2,1fr); }
+            .t-grid { grid-template-columns:repeat(2,1fr); }
+            .ft { grid-template-columns:1fr 1fr; gap:36px; }
+        }
+        @media(max-width:800px) {
+            #character, #story, #origins { grid-template-columns:1fr; }
+            .char-img-veil { display:none; }
+            .char-img { aspect-ratio:4/3; min-height:auto; }
+            .nav-links { display:none; }
+            .nav-hamburger { display:flex; }
+            .col-grid, .t-grid { grid-template-columns:1fr; }
+            .shop-grid { grid-template-columns:repeat(2,1fr); }
+            .exp-feats { flex-wrap:wrap; gap:32px; }
+            .ft { grid-template-columns:1fr; }
+            .hero-btns { flex-direction:column; align-items:center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="ring"></div>
+
+<!-- PRELOADER -->
+<div id="preloader">
+    <div class="pl-name">UNCLE ALEX</div>
+    <div class="pl-line"></div>
+    <div class="pl-sub">Costa Rica &nbsp;·&nbsp; Cuba &nbsp;·&nbsp; Est. 1987</div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+    <a href="#" class="nav-brand">Uncle <span>Alex</span></a>
+    <ul class="nav-links">
+        <li><a href="#character">The Man</a></li>
+        <li><a href="#collection">Collection</a></li>
+        <li><a href="#story">Our Story</a></li>
+        <li><a href="#shop">Shop</a></li>
+    </ul>
+    <a href="#shop" class="nav-cta">Order Now</a>
+    <div class="nav-hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+    <video class="hero-vid" autoplay muted loop playsinline>
+        <source src="hf_20260503_143329_aa3daae2-94ee-405f-8802-7f6247e4a2d7.mp4" type="video/mp4">
+    </video>
+    <div class="hero-veil"></div>
+    <canvas id="smoke"></canvas>
+    <div class="hero-cnt">
+        <p class="hero-tag" id="htag">Costa Rica &nbsp;·&nbsp; Cuba &nbsp;·&nbsp; Est. 1987</p>
+        <h1 class="hero-h1" id="hh1">The Legend<br><em>Uncle Alex</em><br>Cigars</h1>
+        <p class="hero-p" id="hp">Hand-Rolled in the Jungles of Costa Rica &nbsp;·&nbsp; Cuban Soul</p>
+        <div class="hero-btns" id="hbtns">
+            <a href="#collection" class="btn-g">Explore Collection</a>
+            <a href="#character" class="btn-o">Meet Uncle Alex</a>
+        </div>
+    </div>
+    <div class="hero-scroll" id="hscr"><span>Discover</span><div class="s-bar"></div></div>
+</section>
+
+<!-- CHARACTER / THE MAN -->
+<section id="character">
+    <div class="char-img-wrap rv-l">
+        <img class="char-img" src="hf_20260503_145216_008fb29a-505a-4293-abe6-71176f363e2b (1).png" alt="Uncle Alex — Master Cigar Maker">
+        <div class="char-img-veil"></div>
+    </div>
+    <div class="char-text">
+        <span class="lbl rv">The Man Behind the Legend</span>
+        <h2 class="h2 rv">Meet <em>Uncle Alex</em></h2>
+        <div class="divider rv"></div>
+        <blockquote class="char-quote rv">"A cigar is not just tobacco. It is patience made visible — the land, the rain, the years, and the hands of a man who truly cares."</blockquote>
+        <p class="body-t rv">Born in the cloud-laced highlands of Turrialba, Costa Rica, Alejandro — known to every cigar lover as <strong style="color:var(--cream)">Uncle Alex</strong> — grew up watching volcanic soil breathe life into the finest tobacco leaves on earth. Captivated by the legends of Havana, he left at twenty-two on a pilgrimage to Cuba's <em style="color:var(--gold)">Vuelta Abajo</em> valley — the most celebrated tobacco-growing region in the world.</p>
+        <p class="body-t rv" style="margin-top:16px;">For over a decade he apprenticed under the great master torcedor <strong style="color:var(--cream)">Don Rafael Ortega</strong>, learning the sacred geometry of the roll, the chemistry of fermentation, the alchemy of blending. He returned to Costa Rica carrying secrets no school can teach — and founded his small-batch estate on the volcanic slopes of Turrialba, where he personally selects every leaf and rolls every cigar to this day.</p>
+        <div class="char-sig rv">Alejandro Vargas</div>
+        <div class="char-sig-sub rv">Master Torcedor · Founder · Uncle Alex Cigars</div>
+        <div class="char-stats rv">
+            <div><div class="cst-n">37+</div><div class="cst-l">Years Rolling</div></div>
+            <div><div class="cst-n">2</div><div class="cst-l">Countries of Soul</div></div>
+            <div><div class="cst-n">8</div><div class="cst-l">Award Blends</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ORIGINS -->
+<section id="origins">
+    <div class="origin origin-cr rv-l">
+        <div class="origin-bg"></div><div class="origin-bg2"></div>
+        <div class="origin-icon">🌿</div>
+        <h3>Costa <em>Rica</em></h3>
+        <div class="divider"></div>
+        <p>The volcanic soil of Turrialba, enriched by centuries of eruption, produces tobacco leaves with an unmatched mineral richness and natural sweetness. Uncle Alex's estate sits at 1,400 meters — where the mist, the warmth, and the earth conspire to create something extraordinary. Every wrapper leaf on an Uncle Alex cigar begins here, on this sacred ground.</p>
+        <div class="origin-divider"></div>
+    </div>
+    <div class="origin origin-cu rv-r">
+        <div class="origin-bg"></div><div class="origin-bg2"></div>
+        <div class="origin-icon">🇨🇺</div>
+        <h3><em>Cuba</em> · Vuelta Abajo</h3>
+        <div class="divider"></div>
+        <p>The fillers and binders in Uncle Alex's blends draw from the legendary valleys of Vuelta Abajo — soil so perfect for tobacco that Columbus himself remarked upon it. Aged in Spanish cedar for a minimum of four years before rolling, these Cuban leaves bring depth, complexity, and that irreplaceable silky smoke that has seduced kings and presidents for five centuries.</p>
+    </div>
+</section>
+
+<!-- COLLECTION -->
+<section id="collection">
+    <div class="col-hdr">
+        <span class="lbl rv">Signature Collection</span>
+        <h2 class="h2 rv">The <em>Uncle Alex</em> Range</h2>
+        <div class="divider rv"></div>
+        <p class="body-t rv">Three expressions of a life's devotion — each one rolled by Uncle Alex himself on the slopes of Turrialba.</p>
+    </div>
+    <div class="col-grid">
+
+        <!-- Card 1 — Gran Robusto Oscuro -->
+        <div class="pcard" id="pc1">
+            <img class="pcard-photo" src="product-1.jpg" alt="Gran Robusto Oscuro" onerror="this.style.display='none'">
+            <div class="pcard-fallback" style="background:linear-gradient(160deg,#1A1208,#0D0906,#2A1A08);">
+                <svg width="90" height="18" viewBox="0 0 90 18" fill="none"><rect x="0" y="5" width="90" height="8" rx="4" fill="url(#cg1)"/><defs><linearGradient id="cg1" x1="0" y1="0" x2="90" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#3D2B1F"/><stop offset="30%" stop-color="#7A5C3D"/><stop offset="50%" stop-color="#C9A84C"/><stop offset="70%" stop-color="#7A5C3D"/><stop offset="100%" stop-color="#3D2B1F"/></linearGradient></defs></svg>
+            </div>
+            <div class="pcard-veil"></div>
+            <div class="pcard-tag">Signature</div>
+            <div class="pcard-content">
+                <div class="pcard-flag"><span class="flag">Costa Rica</span><span class="flag">Cuba</span></div>
+                <div class="pcard-name">Gran Robusto Oscuro</div>
+                <div class="pcard-origin">Turrialba Wrapper · Vuelta Abajo Filler</div>
+                <p class="pcard-desc">Uncle Alex's flagship — a dark, oily Colorado Maduro wrapper over a 4-year aged Cuban filler. Notes of dark chocolate, roasted espresso, leather, and volcanic earth with a long, silky finish.</p>
+                <div class="pcard-foot">
+                    <div class="pcard-price"><sup>$</sup>68</div>
+                    <button class="pcard-btn">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2 — Claro de la Montaña -->
+        <div class="pcard" id="pc2">
+            <img class="pcard-photo" src="product-2.jpg" alt="Claro de la Montaña" onerror="this.style.display='none'">
+            <div class="pcard-fallback" style="background:linear-gradient(160deg,#1A1508,#0D0C06,#281E0A);">
+                <svg width="90" height="18" viewBox="0 0 90 18" fill="none"><rect x="0" y="5" width="90" height="8" rx="4" fill="url(#cg2)"/><defs><linearGradient id="cg2" x1="0" y1="0" x2="90" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#2A2010"/><stop offset="30%" stop-color="#6A5830"/><stop offset="50%" stop-color="#B89840"/><stop offset="70%" stop-color="#6A5830"/><stop offset="100%" stop-color="#2A2010"/></linearGradient></defs></svg>
+            </div>
+            <div class="pcard-veil"></div>
+            <div class="pcard-content">
+                <div class="pcard-flag"><span class="flag">Costa Rica</span><span class="flag">Cuba</span></div>
+                <div class="pcard-name">Claro de la Montaña</div>
+                <div class="pcard-origin">Natural Claro · Classic Corona</div>
+                <p class="pcard-desc">A silky, pale Claro wrapper grown in the highland shade of Turrialba. Delicate creaminess, hints of toasted almond, white pepper and a whisper of tropical sweetness. The gentleman's afternoon cigar.</p>
+                <div class="pcard-foot">
+                    <div class="pcard-price"><sup>$</sup>54</div>
+                    <button class="pcard-btn">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3 — Epicure Reserve -->
+        <div class="pcard" id="pc3">
+            <img class="pcard-photo" src="product-3.jpg" alt="Epicure Reserve" onerror="this.style.display='none'">
+            <div class="pcard-fallback" style="background:linear-gradient(160deg,#140E0A,#0A0806,#201408);">
+                <svg width="90" height="18" viewBox="0 0 90 18" fill="none"><rect x="0" y="5" width="90" height="8" rx="4" fill="url(#cg3)"/><defs><linearGradient id="cg3" x1="0" y1="0" x2="90" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1A0A08"/><stop offset="30%" stop-color="#503818"/><stop offset="50%" stop-color="#8B6028"/><stop offset="70%" stop-color="#503818"/><stop offset="100%" stop-color="#1A0A08"/></linearGradient></defs></svg>
+            </div>
+            <div class="pcard-veil"></div>
+            <div class="pcard-tag" style="background:rgba(139,60,20,0.9);color:var(--cream-dim)">Reserve</div>
+            <div class="pcard-content">
+                <div class="pcard-flag"><span class="flag">Cuba</span><span class="flag">Aged 5yr</span></div>
+                <div class="pcard-name">Epicure Reserve</div>
+                <div class="pcard-origin">Cuban Sungrown · Limited Release</div>
+                <p class="pcard-desc">Five years in cedar. Uncle Alex's most Cuban expression — a Sungrown wrapper over the finest Vuelta Abajo longfiller. Cedar, dark honey, dried fruit and a hauntingly smooth smoke. Only 200 boxes annually.</p>
+                <div class="pcard-foot">
+                    <div class="pcard-price"><sup>$</sup>95</div>
+                    <button class="pcard-btn">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+    <div class="mq">
+        <div class="mq-i">Gran Robusto Oscuro</div>
+        <div class="mq-i">Claro de la Montaña</div>
+        <div class="mq-i">Epicure Reserve</div>
+        <div class="mq-i">Churchill Oro</div>
+        <div class="mq-i">Turrialba Maduro</div>
+        <div class="mq-i">Havana Soul</div>
+        <div class="mq-i">Gran Robusto Oscuro</div>
+        <div class="mq-i">Claro de la Montaña</div>
+        <div class="mq-i">Epicure Reserve</div>
+        <div class="mq-i">Churchill Oro</div>
+        <div class="mq-i">Turrialba Maduro</div>
+        <div class="mq-i">Havana Soul</div>
+    </div>
+</div>
+
+<!-- STORY / CRAFT -->
+<section id="story">
+    <div class="story-vid rv-l">
+        <video autoplay muted loop playsinline>
+            <source src="hf_20260503_143329_aa3daae2-94ee-405f-8802-7f6247e4a2d7.mp4" type="video/mp4">
+        </video>
+        <div class="story-frame"></div>
+    </div>
+    <div>
+        <span class="lbl rv">How It's Made</span>
+        <h2 class="h2 rv">The <em>Ritual</em> of<br>Every Cigar</h2>
+        <div class="divider rv"></div>
+        <div class="story-steps">
+            <div class="s-step rv"><div class="s-n">01</div><div><div class="s-ttl">The Harvest — Turrialba Highlands</div><p class="s-dsc">Uncle Alex walks his rows at dawn, pinching leaves between his fingers, reading moisture and oil by touch alone. Only the top two primings make the cut — leaves that have absorbed years of volcanic mineral and tropical sun.</p></div></div>
+            <div class="s-step rv"><div class="s-n">02</div><div><div class="s-ttl">Pilón Fermentation — Cuban Method</div><p class="s-dsc">Stacked in the traditional Cuban pilón method, leaves ferment for 18 months at carefully controlled temperatures. This process, learned in Vuelta Abajo, eliminates ammonia and transforms raw tobacco into the deep, complex leaf that defines the Uncle Alex character.</p></div></div>
+            <div class="s-step rv"><div class="s-n">03</div><div><div class="s-ttl">The Roll — Uncle Alex's Own Hands</div><p class="s-dsc">Seated at his bench each morning, Alex rolls every cigar in the premium line personally. The chaveta, the bunching, the triple cap — movements so practiced they have become a form of meditation. No machine has ever touched an Uncle Alex cigar.</p></div></div>
+            <div class="s-step rv"><div class="s-n">04</div><div><div class="s-ttl">Cedar Aging — Six Months Minimum</div><p class="s-dsc">Boxed in Spanish cedar and rested in the aging room where Andean winds keep the humidity perfect, each cigar sleeps until the blend has fully harmonized. The result: a smoke that speaks with one voice — complex, balanced, and unforgettable.</p></div></div>
+        </div>
+    </div>
+</section>
+
+<!-- SHOP -->
+<section id="shop">
+    <div class="shop-hdr">
+        <div>
+            <span class="lbl rv">The Boutique</span>
+            <h2 class="h2 rv">Shop Uncle <em>Alex</em></h2>
+        </div>
+        <div class="shop-filters rv">
+            <button class="filt on">All</button>
+            <button class="filt">Singles</button>
+            <button class="filt">Boxes</button>
+            <button class="filt">Gift Sets</button>
+        </div>
+    </div>
+    <div class="shop-grid">
+
+        <div class="si rv">
+            <div class="si-img">
+                <div class="si-fallback"><div class="si-pat"></div><div class="si-glyph">Ⅰ</div></div>
+                <img src="product-1.jpg" alt="" onerror="this.style.display='none'" style="position:absolute;inset:0;">
+            </div>
+            <div class="si-body">
+                <div class="si-cat">Single · Robusto · Costa Rica / Cuba</div>
+                <div class="si-name">Gran Robusto Oscuro</div>
+                <div class="si-detail">5.5" × 52 · Full Body · Maduro</div>
+                <div class="si-foot"><div class="si-price">$68</div><button class="si-add">+</button></div>
+            </div>
+        </div>
+
+        <div class="si rv">
+            <div class="si-img">
+                <div class="si-fallback"><div class="si-pat"></div><div class="si-glyph">Ⅱ</div></div>
+                <img src="product-2.jpg" alt="" onerror="this.style.display='none'" style="position:absolute;inset:0;">
+            </div>
+            <div class="si-body">
+                <div class="si-cat">Single · Corona · Costa Rica / Cuba</div>
+                <div class="si-name">Claro de la Montaña</div>
+                <div class="si-detail">6" × 44 · Medium Body · Claro</div>
+                <div class="si-foot"><div class="si-price">$54</div><button class="si-add">+</button></div>
+            </div>
+        </div>
+
+        <div class="si rv">
+            <div class="si-img">
+                <div class="si-fallback"><div class="si-pat"></div><div class="si-glyph">Ⅲ</div></div>
+                <img src="product-3.jpg" alt="" onerror="this.style.display='none'" style="position:absolute;inset:0;">
+            </div>
+            <div class="si-body">
+                <div class="si-cat">Single · Robusto · Cuba Reserve</div>
+                <div class="si-name">Epicure Reserve</div>
+                <div class="si-detail">5" × 50 · Full Body · Sungrown</div>
+                <div class="si-foot"><div class="si-price">$95</div><button class="si-add">+</button></div>
+            </div>
+        </div>
+
+        <div class="si rv">
+            <div class="si-img">
+                <div class="si-fallback"><div class="si-pat"></div><div class="si-glyph">Ⅳ</div></div>
+                <img src="product-4.jpg" alt="" onerror="this.style.display='none'" style="position:absolute;inset:0;">
+            </div>
+            <div class="si-body">
+                <div class="si-cat">Single · Churchill · Ultra Premium</div>
+                <div class="si-name">Churchill Oro</div>
+                <div class="si-detail">7" × 48 · Full Body · Gold Tube</div>
+                <div class="si-foot"><div class="si-price">$120</div><button class="si-add">+</button></div>
+            </div>
+        </div>
+
+        <div class="si rv">
+            <div class="si-img">
+                <div class="si-fallback"><div class="si-pat"></div><div class="si-glyph">V</div></div>
+            </div>
+            <div class="si-body">
+                <div class="si-cat">Box of 20 · Costa Rica / Cuba</div>
+                <div class="si-name">Gran Robusto — Box</div>
+                <div class="si-detail">Full Body · Cedar Box</div>
+                <div class="si-foot"><div class="si-price">$980</div><button class="si-add">+</button></div>
+            </div>
+        </div>
+
+        <div class="si rv">
+            <div class="si-img">
+                <div class="si-fallback"><div class="si-pat"></div><div class="si-glyph">Ⅵ</div></div>
+            </div>
+            <div class="si-body">
+                <div class="si-cat">Box of 20 · Cuba Reserve</div>
+                <div class="si-name">Epicure Reserve — Box</div>
+                <div class="si-detail">Full Body · Limited Cedar Box</div>
+                <div class="si-foot"><div class="si-price">$1,650</div><button class="si-add">+</button></div>
+            </div>
+        </div>
+
+        <div class="si rv">
+            <div class="si-img">
+                <div class="si-fallback"><div class="si-pat"></div><div class="si-glyph">Ⅶ</div></div>
+            </div>
+            <div class="si-body">
+                <div class="si-cat">Gift Set · Sampler · 4 Blends</div>
+                <div class="si-name">The Uncle Alex Set</div>
+                <div class="si-detail">4 Premium Selections + Cutter</div>
+                <div class="si-foot"><div class="si-price">$295</div><button class="si-add">+</button></div>
+            </div>
+        </div>
+
+        <div class="si rv">
+            <div class="si-img">
+                <div class="si-fallback" style="background:linear-gradient(135deg,#1A1410,#2D2010);">
+                    <div class="si-pat"></div>
+                    <div style="text-align:center;position:relative;z-index:1;padding:16px;">
+                        <div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--gold);opacity:0.5;margin-bottom:6px;">✦</div>
+                        <div style="font-size:0.5rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);opacity:0.5;">The Experience</div>
+                    </div>
+                </div>
+            </div>
+            <div class="si-body">
+                <div class="si-cat">Ultimate Gift · All Formats</div>
+                <div class="si-name">The Connoisseur Box</div>
+                <div class="si-detail">8 Cigars · Leather Case · Cutter</div>
+                <div class="si-foot"><div class="si-price">$480</div><button class="si-add">+</button></div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+    <div class="exp-inner">
+        <span class="lbl rv">The Ritual</span>
+        <h2 class="exp-h rv">More Than Tobacco.<br>A <em>Conversation</em><br>With Time.</h2>
+        <p class="exp-p rv">Uncle Alex doesn't make cigars for the rush. He makes them for the hour after dinner, when the world slows down and a man with a glass of aged rum and a fine smoke remembers what life is truly for. This is the invitation in every cigar he rolls.</p>
+        <a href="#shop" class="btn-g rv" style="display:inline-block;">Begin Your Journey</a>
+        <div class="exp-feats rv">
+            <div class="ef"><div class="ef-ic">◈</div><div class="ef-t">Free Shipping</div><div class="ef-d">On orders over $200</div></div>
+            <div class="ef"><div class="ef-ic">◎</div><div class="ef-t">Age Verified</div><div class="ef-d">21+ only. Secure checkout</div></div>
+            <div class="ef"><div class="ef-ic">◇</div><div class="ef-t">Hand-Rolled</div><div class="ef-d">By Uncle Alex himself</div></div>
+            <div class="ef"><div class="ef-ic">✦</div><div class="ef-t">Gift Wrapped</div><div class="ef-d">Luxury cedar packaging</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+    <div class="t-hdr">
+        <span class="lbl rv">What They Say</span>
+        <h2 class="h2 rv">Words of the <em>Distinguished</em></h2>
+        <div class="divider rv"></div>
+    </div>
+    <div class="t-grid">
+        <div class="tc rv">
+            <div class="tc-stars">★★★★★</div>
+            <div class="tc-q">"</div>
+            <p class="tc-txt">The Gran Robusto Oscuro stopped me mid-conversation. I have smoked Cohiba, Montecristo, Davidoff — Uncle Alex belongs in that conversation. The volcanic earthiness is unlike anything I've tasted.</p>
+            <div class="tc-auth"><div class="tc-av">RB</div><div><div class="tc-name">Robert Blackwood</div><div class="tc-title">Cigar Aficionado — New York</div></div></div>
+        </div>
+        <div class="tc rv">
+            <div class="tc-stars">★★★★★</div>
+            <div class="tc-q">"</div>
+            <p class="tc-txt">The Epicure Reserve is what I smoke when I want to remember why I started collecting. Five years of aging, rolled by one man's hands — you can taste the patience in every draw.</p>
+            <div class="tc-auth"><div class="tc-av">SM</div><div><div class="tc-name">Santiago Morales</div><div class="tc-title">Master Sommelier — Madrid</div></div></div>
+        </div>
+        <div class="tc rv">
+            <div class="tc-stars">★★★★★</div>
+            <div class="tc-q">"</div>
+            <p class="tc-txt">I sent The Uncle Alex Set to our partners in Geneva. Every single one sent a personal note asking for more. When a cigar inspires a handwritten letter, you know it is exceptional.</p>
+            <div class="tc-auth"><div class="tc-av">JL</div><div><div class="tc-name">James Laurent</div><div class="tc-title">Managing Director — London</div></div></div>
+        </div>
+    </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section id="newsletter">
+    <h2 class="nl-h rv">Join Uncle Alex's <em>Inner Circle</em></h2>
+    <p class="nl-p rv">New releases, private batch announcements, and the stories behind each blend — delivered to your inbox.</p>
+    <form class="nl-form rv" onsubmit="return false;">
+        <input class="nl-in" type="email" placeholder="Your email address">
+        <button class="nl-btn" type="submit">Subscribe</button>
+    </form>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="ft">
+        <div>
+            <div class="ft-brand">Uncle Alex</div>
+            <p class="ft-d">Luxury hand-rolled cigars from the volcanic highlands of Costa Rica, blended with the soul of Cuba. Rolled by one man. Loved by the world.</p>
+            <div class="ft-soc">
+                <a href="#" class="ft-s">f</a>
+                <a href="#" class="ft-s">in</a>
+                <a href="#" class="ft-s">ig</a>
+                <a href="#" class="ft-s">tw</a>
+            </div>
+        </div>
+        <div>
+            <div class="ft-ct">Navigate</div>
+            <ul class="ft-ul">
+                <li><a href="#character">Meet Uncle Alex</a></li>
+                <li><a href="#collection">Collection</a></li>
+                <li><a href="#story">Our Story</a></li>
+                <li><a href="#shop">Shop</a></li>
+                <li><a href="#origins">Origins</a></li>
+            </ul>
+        </div>
+        <div>
+            <div class="ft-ct">Products</div>
+            <ul class="ft-ul">
+                <li><a href="#">Gran Robusto Oscuro</a></li>
+                <li><a href="#">Claro de la Montaña</a></li>
+                <li><a href="#">Epicure Reserve</a></li>
+                <li><a href="#">Churchill Oro</a></li>
+                <li><a href="#">Gift Sets</a></li>
+            </ul>
+        </div>
+        <div>
+            <div class="ft-ct">Contact</div>
+            <ul class="ft-ul">
+                <li><a href="#">alex@unclealexcigars.com</a></li>
+                <li><a href="#">+1 (305) 555-0188</a></li>
+                <li><a href="#">Turrialba, Costa Rica</a></li>
+                <li><a href="#">Mon–Sat, 9am–6pm CST</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="ft-bot">
+        <div class="ft-copy">© 2024 Uncle Alex Cigars. All rights reserved. You must be 21 or older to purchase.</div>
+        <div class="ft-leg">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Age Verification</a>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script>
+// ── PRELOADER ──
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        const pl = document.getElementById('preloader');
+        pl.style.transition = 'opacity 1s ease';
+        pl.style.opacity = '0';
+        setTimeout(() => { pl.style.display = 'none'; heroIn(); }, 1000);
+    }, 2700);
+});
+
+// ── HERO ENTRANCE ──
+function heroIn() {
+    [['htag',80],['hh1',280],['hp',500],['hbtns',700],['hscr',1000]].forEach(([id,d]) => {
+        setTimeout(() => {
+            const el = document.getElementById(id);
+            if(!el) return;
+            el.style.transition = 'opacity 1.1s ease, transform 1.1s ease';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        }, d);
+    });
+}
+
+// ── CURSOR ──
+const cur = document.getElementById('cur');
+const ring = document.getElementById('ring');
+let mx=0, my=0, rx=0, ry=0;
+document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cur.style.left = mx+'px'; cur.style.top = my+'px';
+});
+(function animRing() {
+    rx += (mx-rx)*0.1; ry += (my-ry)*0.1;
+    ring.style.left = rx+'px'; ring.style.top = ry+'px';
+    requestAnimationFrame(animRing);
+})();
+document.querySelectorAll('a,button,.pcard,.si,.tc').forEach(el => {
+    el.addEventListener('mouseenter', () => ring.classList.add('hov'));
+    el.addEventListener('mouseleave', () => ring.classList.remove('hov'));
+});
+
+// ── NAV ──
+window.addEventListener('scroll', () => {
+    document.getElementById('nav').classList.toggle('stuck', window.scrollY > 60);
+});
+
+// ── THREE.JS SMOKE ──
+const canvas = document.getElementById('smoke');
+const scene = new THREE.Scene();
+const cam = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 100);
+const rend = new THREE.WebGLRenderer({ canvas, alpha: true });
+rend.setSize(innerWidth, innerHeight);
+rend.setPixelRatio(Math.min(devicePixelRatio, 2));
+cam.position.z = 5;
+
+// Smoke texture
+const tc = document.createElement('canvas');
+tc.width = tc.height = 64;
+const tctx = tc.getContext('2d');
+const g = tctx.createRadialGradient(32,32,0,32,32,32);
+g.addColorStop(0,'rgba(215,205,185,0.6)');
+g.addColorStop(0.45,'rgba(195,185,165,0.18)');
+g.addColorStop(1,'rgba(175,165,145,0)');
+tctx.fillStyle = g; tctx.fillRect(0,0,64,64);
+const smTex = new THREE.CanvasTexture(tc);
+
+const parts = [];
+for(let i=0; i<100; i++){
+    const s = 0.3+Math.random()*1.05;
+    const m = new THREE.Mesh(
+        new THREE.PlaneGeometry(s,s),
+        new THREE.MeshBasicMaterial({ map:smTex, transparent:true, opacity:0.03+Math.random()*0.07, depthWrite:false, blending:THREE.AdditiveBlending })
+    );
+    m.position.set((Math.random()-.5)*13,(Math.random()-.5)*9,(Math.random()-.5)*3);
+    m.rotation.z = Math.random()*Math.PI*2;
+    scene.add(m);
+    parts.push({ m, vy:0.003+Math.random()*0.005, vx:(Math.random()-.5)*0.002, vr:(Math.random()-.5)*0.003 });
+}
+(function tick(){
+    requestAnimationFrame(tick);
+    parts.forEach(p => {
+        p.m.position.y += p.vy;
+        p.m.position.x += p.vx;
+        p.m.rotation.z += p.vr;
+        if(p.m.position.y > 6){ p.m.position.y = -6; p.m.position.x = (Math.random()-.5)*13; }
+    });
+    rend.render(scene, cam);
+})();
+window.addEventListener('resize', () => {
+    cam.aspect = innerWidth/innerHeight; cam.updateProjectionMatrix();
+    rend.setSize(innerWidth, innerHeight);
+});
+
+// ── 3D TILT on product cards ──
+document.querySelectorAll('.pcard').forEach(c => {
+    c.addEventListener('mousemove', e => {
+        const r = c.getBoundingClientRect();
+        const x = (e.clientX-r.left)/r.width-.5;
+        const y = (e.clientY-r.top)/r.height-.5;
+        c.style.transform = `perspective(900px) rotateY(${x*8}deg) rotateX(${-y*8}deg) scale(1.02)`;
+    });
+    c.addEventListener('mouseleave', () => { c.style.transform = ''; });
+});
+
+// ── 3D TILT on shop items ──
+document.querySelectorAll('.si').forEach(c => {
+    c.addEventListener('mousemove', e => {
+        const r = c.getBoundingClientRect();
+        const x = (e.clientX-r.left)/r.width-.5;
+        const y = (e.clientY-r.top)/r.height-.5;
+        c.style.transform = `perspective(700px) rotateY(${x*5}deg) rotateX(${-y*5}deg) translateY(-4px)`;
+    });
+    c.addEventListener('mouseleave', () => { c.style.transform = ''; });
+});
+
+// ── SCROLL REVEAL ──
+const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
+document.querySelectorAll('.rv,.rv-l,.rv-r').forEach(el => io.observe(el));
+
+// ── FILTER TABS ──
+document.querySelectorAll('.filt').forEach(b => {
+    b.addEventListener('click', () => {
+        document.querySelectorAll('.filt').forEach(x => x.classList.remove('on'));
+        b.classList.add('on');
+    });
+});
+
+// ── CART FEEDBACK ──
+document.querySelectorAll('.pcard-btn,.si-add').forEach(b => {
+    b.addEventListener('click', () => {
+        const orig = b.textContent;
+        b.textContent = b.classList.contains('si-add') ? '✓' : 'Added ✓';
+        b.style.background = '#3a6b3e';
+        setTimeout(() => { b.textContent = orig; b.style.background = ''; }, 1700);
+    });
+});
+
+// ── NEWSLETTER ──
+document.querySelector('.nl-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const inp = document.querySelector('.nl-in');
+    if(inp.value){ inp.value = ''; inp.placeholder = 'Welcome to the Inner Circle ✦'; }
+});
+</script>
+</body>
+</html>
