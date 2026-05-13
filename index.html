@@ -625,15 +625,15 @@
             <h2 class="h2 rv">Shop Uncle <em>Alex</em></h2>
         </div>
         <div class="shop-filters rv">
-            <button class="filt on">All</button>
-            <button class="filt">Singles</button>
-            <button class="filt">Boxes</button>
-            <button class="filt">Gift Sets</button>
+            <button class="filt on" data-cat="all">All</button>
+            <button class="filt" data-cat="singles">Singles</button>
+            <button class="filt" data-cat="boxes">Boxes</button>
+            <button class="filt" data-cat="gift-sets">Gift Sets</button>
         </div>
     </div>
     <div class="shop-grid">
 
-        <div class="si rv">
+        <div class="si rv" data-cat="singles">
             <div class="si-img">
                 <div class="si-fallback"><div class="si-pat"></div><div class="si-glyph">Ⅰ</div></div>
                 <img src="hf_20260503_143954_c3bc98bd-e9ce-48d5-b034-9f6c268157ea.png" alt="D8 Cigars" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
@@ -646,7 +646,7 @@
             </div>
         </div>
 
-        <div class="si rv">
+        <div class="si rv" data-cat="singles">
             <div class="si-img">
                 <div class="si-fallback"><div class="si-pat"></div><div class="si-glyph">Ⅱ</div></div>
                 <img src="hf_20260503_151357_9e0f00b1-a367-4e7d-862a-c525421fa737.png" alt="Cubanitos Cigars" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
@@ -659,7 +659,7 @@
             </div>
         </div>
 
-        <div class="si rv">
+        <div class="si rv" data-cat="singles">
             <div class="si-img">
                 <div class="si-fallback"><div class="si-pat"></div><div class="si-glyph">Ⅲ</div></div>
                 <img src="hf_20260503_152217_b1a9065a-2d87-491f-a874-e27d94d72984.png" alt="E2 Tubo Cigars" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
@@ -672,7 +672,7 @@
             </div>
         </div>
 
-        <div class="si rv">
+        <div class="si rv" data-cat="singles">
             <div class="si-img">
                 <div class="si-fallback"><div class="si-pat"></div><div class="si-glyph">Ⅳ</div></div>
             </div>
@@ -684,7 +684,7 @@
             </div>
         </div>
 
-        <div class="si rv">
+        <div class="si rv" data-cat="boxes">
             <div class="si-img">
                 <div class="si-fallback"><div class="si-pat"></div><div class="si-glyph">V</div></div>
             </div>
@@ -696,7 +696,7 @@
             </div>
         </div>
 
-        <div class="si rv">
+        <div class="si rv" data-cat="boxes">
             <div class="si-img">
                 <div class="si-fallback"><div class="si-pat"></div><div class="si-glyph">Ⅵ</div></div>
             </div>
@@ -708,7 +708,7 @@
             </div>
         </div>
 
-        <div class="si rv">
+        <div class="si rv" data-cat="gift-sets">
             <div class="si-img">
                 <div class="si-fallback"><div class="si-pat"></div><div class="si-glyph">Ⅶ</div></div>
             </div>
@@ -716,11 +716,11 @@
                 <div class="si-cat">Gift Set · Sampler · 4 Blends</div>
                 <div class="si-name">The Uncle Alex Set</div>
                 <div class="si-detail">4 Premium Selections + Cutter</div>
-                <div class="si-foot"><div class="si-price">$295</div><button class="si-add">+</button></div>
+                <div class="si-foot"><div class="si-price">₪295</div><button class="si-add">+</button></div>
             </div>
         </div>
 
-        <div class="si rv">
+        <div class="si rv" data-cat="gift-sets">
             <div class="si-img">
                 <div class="si-fallback" style="background:linear-gradient(135deg,#1A1410,#2D2010);">
                     <div class="si-pat"></div>
@@ -734,7 +734,7 @@
                 <div class="si-cat">Ultimate Gift · All Formats</div>
                 <div class="si-name">The Connoisseur Box</div>
                 <div class="si-detail">8 Cigars · Leather Case · Cutter</div>
-                <div class="si-foot"><div class="si-price">$480</div><button class="si-add">+</button></div>
+                <div class="si-foot"><div class="si-price">₪480</div><button class="si-add">+</button></div>
             </div>
         </div>
 
@@ -1141,10 +1141,16 @@ const io = new IntersectionObserver(entries => {
 document.querySelectorAll('.rv,.rv-l,.rv-r').forEach(el => io.observe(el));
 
 // ── FILTER TABS ──
-document.querySelectorAll('.filt').forEach(b => {
-    b.addEventListener('click', () => {
-        document.querySelectorAll('.filt').forEach(x => x.classList.remove('on'));
-        b.classList.add('on');
+document.querySelectorAll('.filt').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.filt').forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+        const cat = btn.dataset.cat;
+        document.querySelectorAll('.shop-grid .si').forEach(item => {
+            const show = cat === 'all' || item.dataset.cat === cat;
+            item.style.display = show ? '' : 'none';
+            if (show) { item.classList.remove('rv'); void item.offsetWidth; item.classList.add('in'); }
+        });
     });
 });
 
