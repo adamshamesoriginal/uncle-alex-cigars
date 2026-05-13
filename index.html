@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Raleway:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
     <style>
         :root {
             --gold: #C9A84C;
@@ -108,12 +109,12 @@
         .col-hdr .body-t { margin:0 auto; text-align:center; }
         .col-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
         .pcard { position:relative; overflow:hidden; aspect-ratio:3/4; background:var(--dark-mid); cursor:none; transform-style:preserve-3d; transition:transform 0.15s; }
-        .pcard-photo { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform 0.6s ease; filter:brightness(0.75) sepia(10%); }
-        .pcard:hover .pcard-photo { transform:scale(1.06); filter:brightness(0.85) sepia(5%); }
-        .pcard-fallback { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
-        .pcard-veil { position:absolute; inset:0; background:linear-gradient(to bottom, rgba(6,5,3,0.1) 0%, rgba(6,5,3,0.4) 50%, rgba(6,5,3,0.97) 100%); }
-        .pcard-tag { position:absolute; top:20px; right:0; background:var(--gold); color:#060503; font-size:0.48rem; letter-spacing:0.28em; text-transform:uppercase; padding:5px 14px; z-index:2; }
-        .pcard-content { position:absolute; bottom:0; left:0; right:0; padding:28px; z-index:2; transform:translateY(50px); transition:transform 0.45s cubic-bezier(0.16,1,0.3,1); }
+        .pcard-fallback { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:0; }
+        .pcard-photo { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform 0.6s ease; filter:brightness(0.85) sepia(5%); z-index:1; }
+        .pcard:hover .pcard-photo { transform:scale(1.06); filter:brightness(0.95) sepia(2%); }
+        .pcard-veil { position:absolute; inset:0; background:linear-gradient(to bottom, rgba(6,5,3,0.1) 0%, rgba(6,5,3,0.4) 50%, rgba(6,5,3,0.97) 100%); z-index:2; }
+        .pcard-tag { position:absolute; top:20px; right:0; background:var(--gold); color:#060503; font-size:0.48rem; letter-spacing:0.28em; text-transform:uppercase; padding:5px 14px; z-index:3; }
+        .pcard-content { position:absolute; bottom:0; left:0; right:0; padding:28px; z-index:3; transform:translateY(50px); transition:transform 0.45s cubic-bezier(0.16,1,0.3,1); }
         .pcard:hover .pcard-content { transform:translateY(0); }
         .pcard-flag { display:flex; gap:8px; margin-bottom:10px; }
         .flag { font-size:0.46rem; letter-spacing:0.28em; text-transform:uppercase; padding:3px 10px; border:1px solid rgba(201,168,76,0.4); color:var(--gold); }
@@ -250,6 +251,150 @@
         .rv-r { opacity:0; transform:translateX(30px); transition:opacity 0.85s ease, transform 0.85s ease; }
         .rv-r.in { opacity:1; transform:translateX(0); }
 
+        /* ── CART ── */
+        .nav-cart-btn { background:none; border:none; cursor:none; display:flex; align-items:center; gap:7px; color:var(--cream-dim); padding:8px 12px; position:relative; transition:color 0.3s; }
+        .nav-cart-btn:hover { color:var(--gold); }
+        .nav-cart-count { background:var(--gold); color:#060503; border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center; font-size:0.58rem; font-weight:700; opacity:0; transition:opacity 0.3s; position:absolute; top:4px; right:4px; }
+        .nav-cart-count.show { opacity:1; }
+        .cart-overlay { position:fixed; inset:0; background:rgba(6,5,3,0.75); z-index:8000; opacity:0; pointer-events:none; transition:opacity 0.35s; }
+        .cart-overlay.open { opacity:1; pointer-events:all; }
+        .cart-drawer { position:fixed; top:0; right:-460px; width:420px; max-width:96vw; height:100vh; background:#0C0906; border-left:1px solid rgba(201,168,76,0.13); z-index:8001; display:flex; flex-direction:column; transition:right 0.42s cubic-bezier(0.16,1,0.3,1); }
+        .cart-drawer.open { right:0; }
+        .cart-hdr { padding:26px 24px 20px; border-bottom:1px solid rgba(201,168,76,0.1); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+        .cart-title { font-family:'Cormorant Garamond',serif; font-size:1.35rem; font-weight:300; letter-spacing:0.12em; color:var(--cream); }
+        .cart-close-btn { background:none; border:1px solid rgba(201,168,76,0.18); color:var(--cream-dim); width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:none; font-size:0.8rem; transition:all 0.2s; }
+        .cart-close-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .cart-body { flex:1; overflow-y:auto; padding:8px 24px; scrollbar-width:thin; scrollbar-color:rgba(201,168,76,0.15) transparent; }
+        .cart-body::-webkit-scrollbar { width:3px; }
+        .cart-body::-webkit-scrollbar-thumb { background:rgba(201,168,76,0.18); }
+        .cart-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:240px; color:var(--cream-dim); text-align:center; gap:14px; }
+        .cart-empty-icon { font-family:'Cormorant Garamond',serif; font-size:3rem; color:var(--gold); opacity:0.15; line-height:1; }
+        .cart-empty p { font-size:0.68rem; letter-spacing:0.22em; text-transform:uppercase; opacity:0.45; }
+        .cart-item { display:flex; gap:14px; align-items:flex-start; padding:16px 0; border-bottom:1px solid rgba(201,168,76,0.07); }
+        .cart-item-img { width:62px; height:62px; object-fit:cover; flex-shrink:0; }
+        .cart-item-thumb { width:62px; height:62px; background:linear-gradient(135deg,#1A1208,#2D1E0E); display:flex; align-items:center; justify-content:center; font-family:'Cormorant Garamond',serif; color:var(--gold); font-size:1.4rem; opacity:0.45; flex-shrink:0; }
+        .cart-item-info { flex:1; min-width:0; }
+        .cart-item-name { font-family:'Cormorant Garamond',serif; font-size:0.95rem; color:var(--cream); margin-bottom:4px; }
+        .cart-item-price { font-size:0.7rem; color:var(--gold); margin-bottom:10px; }
+        .cart-item-row { display:flex; align-items:center; justify-content:space-between; }
+        .cart-qty { display:flex; align-items:center; gap:8px; }
+        .qty-btn { width:24px; height:24px; background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.18); color:var(--cream); font-size:0.9rem; cursor:none; display:flex; align-items:center; justify-content:center; transition:background 0.2s; line-height:1; }
+        .qty-btn:hover { background:rgba(201,168,76,0.22); }
+        .qty-num { font-size:0.78rem; color:var(--cream); min-width:18px; text-align:center; }
+        .cart-rm { background:none; border:none; color:var(--cream-dim); font-size:0.58rem; letter-spacing:0.12em; text-transform:uppercase; cursor:none; opacity:0.38; transition:opacity 0.2s; }
+        .cart-rm:hover { opacity:1; color:var(--gold); }
+        .cart-foot { padding:20px 24px 28px; border-top:1px solid rgba(201,168,76,0.1); flex-shrink:0; }
+        .cart-total-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:20px; }
+        .cart-total-lbl { font-size:0.58rem; letter-spacing:0.32em; text-transform:uppercase; color:var(--cream-dim); }
+        .cart-total-val { font-family:'Cormorant Garamond',serif; font-size:1.6rem; color:var(--gold); }
+        .cart-order-btn { width:100%; padding:16px; background:var(--gold); border:none; color:#060503; font-family:'Raleway',sans-serif; font-size:0.62rem; font-weight:600; letter-spacing:0.28em; text-transform:uppercase; cursor:none; transition:background 0.3s, transform 0.2s; }
+        .cart-order-btn:hover { background:var(--gold-light); transform:translateY(-1px); }
+        .cart-note { font-size:0.6rem; color:var(--cream-dim); opacity:0.4; text-align:center; margin-top:12px; letter-spacing:0.08em; }
+
+        /* ── CHECKOUT MODAL ── */
+        .co-overlay { position:fixed; inset:0; background:rgba(6,5,3,0.94); z-index:9500; display:flex; align-items:center; justify-content:center; padding:16px; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+        .co-overlay.open { opacity:1; pointer-events:all; }
+        .co-modal { background:#0C0906; border:1px solid rgba(201,168,76,0.14); width:100%; max-width:880px; max-height:92vh; display:grid; grid-template-columns:320px 1fr; position:relative; overflow:hidden; animation:coIn 0.38s cubic-bezier(0.16,1,0.3,1) both; }
+        @keyframes coIn { from{transform:translateY(22px);opacity:0} to{transform:translateY(0);opacity:1} }
+        .co-close { position:absolute; top:16px; right:16px; z-index:20; background:none; border:1px solid rgba(201,168,76,0.18); color:var(--cream-dim); width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:none; font-size:0.75rem; transition:all 0.2s; }
+        .co-close:hover { border-color:var(--gold); color:var(--gold); }
+
+        /* summary */
+        .co-sum { background:#060503; padding:36px 26px; display:flex; flex-direction:column; overflow-y:auto; border-right:1px solid rgba(201,168,76,0.08); }
+        .co-sum-brand { font-family:'Cormorant Garamond',serif; font-size:1.25rem; font-weight:300; letter-spacing:0.28em; color:var(--gold); margin-bottom:4px; }
+        .co-sum-secure { font-size:0.5rem; letter-spacing:0.26em; text-transform:uppercase; color:var(--cream-dim); opacity:0.38; margin-bottom:28px; }
+        .co-sum-items { flex:1; display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
+        .co-sum-item { display:flex; align-items:center; gap:12px; }
+        .co-sum-thumb { position:relative; width:48px; height:48px; flex-shrink:0; }
+        .co-sum-thumb img { width:100%; height:100%; object-fit:cover; }
+        .co-sum-thumb-fb { width:48px; height:48px; background:linear-gradient(135deg,#1A1208,#2D1E0E); display:flex; align-items:center; justify-content:center; font-family:'Cormorant Garamond',serif; color:var(--gold); font-size:1rem; opacity:0.4; }
+        .co-sum-qbadge { position:absolute; top:-5px; right:-5px; background:var(--gold); color:#060503; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; font-size:0.5rem; font-weight:800; }
+        .co-sum-name { font-family:'Cormorant Garamond',serif; font-size:0.82rem; color:var(--cream); flex:1; line-height:1.3; }
+        .co-sum-price { font-size:0.7rem; color:var(--cream-dim); }
+        .co-sum-line { height:1px; background:rgba(201,168,76,0.08); margin:6px 0 18px; }
+        .co-sum-total { display:flex; justify-content:space-between; align-items:baseline; }
+        .co-sum-tlbl { font-size:0.54rem; letter-spacing:0.28em; text-transform:uppercase; color:var(--cream-dim); }
+        .co-sum-tval { font-family:'Cormorant Garamond',serif; font-size:1.6rem; color:var(--gold); }
+
+        /* payment panel */
+        .co-pay { padding:36px 30px; overflow-y:auto; }
+        .co-pay-title { font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-weight:300; color:var(--cream); letter-spacing:0.08em; margin-bottom:20px; }
+        .quick-btns { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+        .quick-btn { width:100%; padding:12px 16px; border:1px solid rgba(201,168,76,0.2); background:rgba(201,168,76,0.04); color:var(--cream); font-family:'Raleway',sans-serif; font-size:0.68rem; letter-spacing:0.1em; cursor:none; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.22s; }
+        .quick-btn:hover { border-color:rgba(201,168,76,0.5); background:rgba(201,168,76,0.09); }
+        #stripePayReqBtn { min-height:0; }
+        .pay-sep { display:flex; align-items:center; gap:10px; margin:14px 0; }
+        .pay-sep::before,.pay-sep::after { content:''; flex:1; height:1px; background:rgba(201,168,76,0.09); }
+        .pay-sep span { font-size:0.5rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--cream-dim); opacity:0.38; white-space:nowrap; }
+        .co-tabs { display:flex; border:1px solid rgba(201,168,76,0.13); margin-bottom:18px; }
+        .co-tab { flex:1; padding:10px 4px; background:none; border:none; border-right:1px solid rgba(201,168,76,0.13); color:var(--cream-dim); font-family:'Raleway',sans-serif; font-size:0.54rem; letter-spacing:0.14em; text-transform:uppercase; cursor:none; transition:all 0.2s; }
+        .co-tab:last-child { border-right:none; }
+        .co-tab.on { background:rgba(201,168,76,0.1); color:var(--gold); }
+        .co-tab:hover:not(.on) { color:var(--cream); background:rgba(201,168,76,0.04); }
+        .co-panel { display:none; }
+        .co-panel.on { display:block; }
+        .card-name-in { width:100%; background:rgba(201,168,76,0.04); border:1px solid rgba(201,168,76,0.17); padding:12px 14px; color:var(--cream); font-family:'Raleway',sans-serif; font-size:0.78rem; outline:none; margin-bottom:10px; transition:border-color 0.2s; }
+        .card-name-in::placeholder { color:var(--cream-dim); opacity:0.32; }
+        .card-name-in:focus { border-color:var(--gold); }
+        .stripe-wrap { background:rgba(201,168,76,0.04); border:1px solid rgba(201,168,76,0.17); padding:13px 14px; margin-bottom:10px; transition:border-color 0.2s; min-height:44px; }
+        .stripe-wrap.focused { border-color:var(--gold); }
+        .co-card-err { font-size:0.64rem; color:#e05252; min-height:16px; margin-bottom:8px; }
+        .co-pay-btn { width:100%; padding:15px; background:var(--gold); border:none; color:#060503; font-family:'Raleway',sans-serif; font-size:0.62rem; font-weight:700; letter-spacing:0.26em; text-transform:uppercase; cursor:none; transition:background 0.3s; display:flex; align-items:center; justify-content:center; gap:10px; }
+        .co-pay-btn:hover { background:var(--gold-light); }
+        .co-pay-btn.busy { opacity:0.65; pointer-events:none; }
+        .btn-spin { width:13px; height:13px; border:2px solid rgba(6,5,3,0.25); border-top-color:#060503; border-radius:50%; animation:spin 0.7s linear infinite; }
+        .crypto-list { display:flex; flex-direction:column; gap:9px; }
+        .crypto-row { border:1px solid rgba(201,168,76,0.12); padding:12px 14px; display:flex; align-items:center; gap:12px; transition:border-color 0.2s; }
+        .crypto-row:hover { border-color:rgba(201,168,76,0.32); }
+        .cr-icon { font-size:1.35rem; width:28px; text-align:center; flex-shrink:0; }
+        .cr-info { flex:1; min-width:0; }
+        .cr-name { font-family:'Cormorant Garamond',serif; font-size:0.88rem; color:var(--cream); margin-bottom:2px; }
+        .cr-addr { font-size:0.48rem; color:var(--gold); opacity:0.6; font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .cr-copy { background:none; border:1px solid rgba(201,168,76,0.18); color:var(--cream-dim); font-size:0.48rem; letter-spacing:0.1em; padding:5px 10px; cursor:none; transition:all 0.2s; font-family:'Raleway',sans-serif; text-transform:uppercase; flex-shrink:0; }
+        .cr-copy:hover { border-color:var(--gold); color:var(--gold); }
+        .crypto-note { font-size:0.58rem; color:var(--cream-dim); opacity:0.36; margin-top:14px; line-height:1.65; text-align:center; }
+        .co-success { display:none; position:absolute; inset:0; background:#0C0906; z-index:15; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:18px; padding:48px; }
+        .co-success.show { display:flex; }
+        .co-success-star { font-family:'Cormorant Garamond',serif; font-size:3.5rem; color:var(--gold); line-height:1; }
+        .co-success-h { font-family:'Cormorant Garamond',serif; font-size:2rem; color:var(--cream); }
+        .co-success-p { font-size:0.76rem; color:var(--cream-dim); line-height:1.75; max-width:340px; }
+
+        /* step bar */
+        .co-steps-bar { display:flex; align-items:center; gap:8px; margin-bottom:22px; padding-bottom:18px; border-bottom:1px solid rgba(201,168,76,0.08); }
+        .co-stp { font-size:0.52rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--cream-dim); opacity:0.35; transition:all 0.25s; }
+        .co-stp.on { color:var(--gold); opacity:1; }
+        .co-stp-sep { font-size:0.6rem; color:var(--cream-dim); opacity:0.2; }
+
+        /* delivery form */
+        .co-field-stack { display:flex; flex-direction:column; gap:10px; }
+        .co-field-2col { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .co-field { width:100%; background:rgba(201,168,76,0.04); border:1px solid rgba(201,168,76,0.17); padding:13px 14px; color:var(--cream); font-family:'Raleway',sans-serif; font-size:0.78rem; outline:none; transition:border-color 0.2s; appearance:none; -webkit-appearance:none; }
+        .co-field::placeholder { color:var(--cream-dim); opacity:0.32; }
+        .co-field:focus { border-color:var(--gold); }
+        .co-field-err { font-size:0.64rem; color:#e05252; min-height:16px; margin-top:4px; }
+        .co-back-btn { background:none; border:none; color:var(--gold); font-family:'Raleway',sans-serif; font-size:0.54rem; letter-spacing:0.16em; text-transform:uppercase; cursor:none; padding:0 0 16px; display:flex; align-items:center; gap:5px; opacity:0.75; transition:opacity 0.2s; }
+        .co-back-btn:hover { opacity:1; }
+
+        /* Apple Pay / Google Pay */
+        .apay-btn { width:100%; padding:13px 16px; background:#000; color:#fff; border:none; cursor:none; font-family:-apple-system,BlinkMacSystemFont,'Raleway',sans-serif; font-size:0.88rem; font-weight:500; letter-spacing:0.01em; display:flex; align-items:center; justify-content:center; gap:7px; transition:opacity 0.2s; }
+        .apay-btn:hover { opacity:0.85; }
+        .gpay-btn { width:100%; padding:11px 16px; background:#fff; color:#3c4043; border:1px solid rgba(0,0,0,0.12); cursor:none; font-family:'Raleway',sans-serif; font-size:0.8rem; display:flex; align-items:center; justify-content:center; gap:6px; transition:box-shadow 0.2s; }
+        .gpay-btn:hover { box-shadow:0 1px 8px rgba(0,0,0,0.18); }
+
+        /* mobile checkout */
+        @media(max-width:700px) {
+            .co-overlay { padding:0; align-items:flex-end; }
+            .co-modal { grid-template-columns:1fr; max-height:92vh; border-bottom:none; border-radius:0; animation:coInMob 0.38s cubic-bezier(0.16,1,0.3,1) both; }
+            @keyframes coInMob { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+            .co-sum { display:none; }
+            .co-pay { padding:24px 18px 32px; }
+            .co-field-2col { grid-template-columns:1fr; }
+            .co-field { padding:15px 14px; font-size:0.85rem; }
+            .co-pay-btn { padding:17px; font-size:0.65rem; }
+            .apay-btn { padding:15px 16px; font-size:0.95rem; }
+            .gpay-btn { padding:13px 16px; }
+        }
+
         /* ── RESPONSIVE ── */
         @media(max-width:1100px) {
             .col-grid { grid-template-columns:repeat(2,1fr); }
@@ -292,7 +437,11 @@
         <li><a href="#story">Our Story</a></li>
         <li><a href="#shop">Shop</a></li>
     </ul>
-    <a href="#shop" class="nav-cta">Order Now</a>
+    <button class="nav-cart-btn" id="navCartBtn">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span class="nav-cart-count" id="navCartCount">0</span>
+    </button>
+    <a href="#shop" class="nav-cta" id="navCta">Order Now</a>
     <div class="nav-hamburger"><span></span><span></span><span></span></div>
 </nav>
 
@@ -369,10 +518,10 @@
 
         <!-- Card 1 — D8 Cigars -->
         <div class="pcard" id="pc1">
-            <img class="pcard-photo" src="hf_20260503_143954_c3bc98bd-e9ce-48d5-b034-9f6c268157ea.png" alt="D8 Cigars" onerror="this.style.display='none'">
             <div class="pcard-fallback" style="background:linear-gradient(160deg,#1A1208,#0D0906,#2A1A08);">
                 <svg width="90" height="18" viewBox="0 0 90 18" fill="none"><rect x="0" y="5" width="90" height="8" rx="4" fill="url(#cg1)"/><defs><linearGradient id="cg1" x1="0" y1="0" x2="90" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#3D2B1F"/><stop offset="30%" stop-color="#7A5C3D"/><stop offset="50%" stop-color="#C9A84C"/><stop offset="70%" stop-color="#7A5C3D"/><stop offset="100%" stop-color="#3D2B1F"/></linearGradient></defs></svg>
             </div>
+            <img class="pcard-photo" src="hf_20260503_143954_c3bc98bd-e9ce-48d5-b034-9f6c268157ea.png" alt="D8 Cigars" onerror="this.style.display='none'">
             <div class="pcard-veil"></div>
             <div class="pcard-tag">Signature</div>
             <div class="pcard-content">
@@ -389,10 +538,10 @@
 
         <!-- Card 2 — Cubanitos Cigars -->
         <div class="pcard" id="pc2">
-            <img class="pcard-photo" src="hf_20260503_151357_9e0f00b1-a367-4e7d-862a-c525421fa737.png" alt="Cubanitos Cigars" onerror="this.style.display='none'">
             <div class="pcard-fallback" style="background:linear-gradient(160deg,#1A1508,#0D0C06,#281E0A);">
                 <svg width="90" height="18" viewBox="0 0 90 18" fill="none"><rect x="0" y="5" width="90" height="8" rx="4" fill="url(#cg2)"/><defs><linearGradient id="cg2" x1="0" y1="0" x2="90" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#2A2010"/><stop offset="30%" stop-color="#6A5830"/><stop offset="50%" stop-color="#B89840"/><stop offset="70%" stop-color="#6A5830"/><stop offset="100%" stop-color="#2A2010"/></linearGradient></defs></svg>
             </div>
+            <img class="pcard-photo" src="hf_20260503_151357_9e0f00b1-a367-4e7d-862a-c525421fa737.png" alt="Cubanitos Cigars" onerror="this.style.display='none'">
             <div class="pcard-veil"></div>
             <div class="pcard-content">
                 <div class="pcard-flag"><span class="flag">Costa Rica</span><span class="flag">Cuba</span></div>
@@ -408,10 +557,10 @@
 
         <!-- Card 3 — E2 Tubo Cigars -->
         <div class="pcard" id="pc3">
-            <img class="pcard-photo" src="hf_20260503_152217_b1a9065a-2d87-491f-a874-e27d94d72984.png" alt="E2 Tubo Cigars" onerror="this.style.display='none'">
             <div class="pcard-fallback" style="background:linear-gradient(160deg,#140E0A,#0A0806,#201408);">
                 <svg width="90" height="18" viewBox="0 0 90 18" fill="none"><rect x="0" y="5" width="90" height="8" rx="4" fill="url(#cg3)"/><defs><linearGradient id="cg3" x1="0" y1="0" x2="90" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1A0A08"/><stop offset="30%" stop-color="#503818"/><stop offset="50%" stop-color="#8B6028"/><stop offset="70%" stop-color="#503818"/><stop offset="100%" stop-color="#1A0A08"/></linearGradient></defs></svg>
             </div>
+            <img class="pcard-photo" src="hf_20260503_152217_b1a9065a-2d87-491f-a874-e27d94d72984.png" alt="E2 Tubo Cigars" onerror="this.style.display='none'">
             <div class="pcard-veil"></div>
             <div class="pcard-tag" style="background:rgba(139,60,20,0.9);color:var(--cream-dim)">Reserve</div>
             <div class="pcard-content">
@@ -700,6 +849,174 @@
     </div>
 </footer>
 
+<!-- CHECKOUT MODAL -->
+<div class="co-overlay" id="coOverlay">
+    <div class="co-modal" id="coModal">
+        <button class="co-close" id="coCloseBtn">✕</button>
+
+        <!-- Order Summary (left) -->
+        <div class="co-sum">
+            <div class="co-sum-brand">Uncle Alex</div>
+            <div class="co-sum-secure">🔒 Secure Checkout</div>
+            <div class="co-sum-items" id="coSumItems"></div>
+            <div class="co-sum-line"></div>
+            <div class="co-sum-total">
+                <span class="co-sum-tlbl">Total</span>
+                <span class="co-sum-tval" id="coSumTotal">₪0</span>
+            </div>
+        </div>
+
+        <!-- Right panel -->
+        <div class="co-pay">
+            <!-- Step indicator -->
+            <div class="co-steps-bar">
+                <span class="co-stp on" id="stp1Lbl">1 · Delivery</span>
+                <span class="co-stp-sep">›</span>
+                <span class="co-stp" id="stp2Lbl">2 · Payment</span>
+            </div>
+
+            <!-- STEP 1: Delivery -->
+            <div id="stepDelivery">
+                <div class="co-pay-title">Delivery Details</div>
+                <div class="co-field-stack">
+                    <div class="co-field-2col">
+                        <input class="co-field" type="text" id="dlvName" placeholder="Full name">
+                        <input class="co-field" type="tel" id="dlvPhone" placeholder="Phone number">
+                    </div>
+                    <input class="co-field" type="text" id="dlvAddress" placeholder="Street address">
+                    <div class="co-field-2col">
+                        <input class="co-field" type="text" id="dlvCity" placeholder="City">
+                        <select class="co-field" id="dlvCountry">
+                            <option value="">Country</option>
+                            <option value="IL" selected>🇮🇱 Israel</option>
+                            <option value="US">🇺🇸 United States</option>
+                            <option value="GB">🇬🇧 United Kingdom</option>
+                            <option value="DE">🇩🇪 Germany</option>
+                            <option value="FR">🇫🇷 France</option>
+                            <option value="IT">🇮🇹 Italy</option>
+                            <option value="ES">🇪🇸 Spain</option>
+                            <option value="AU">🇦🇺 Australia</option>
+                            <option value="CA">🇨🇦 Canada</option>
+                            <option value="AE">🇦🇪 UAE</option>
+                        </select>
+                    </div>
+                    <input class="co-field" type="text" id="dlvNotes" placeholder="Delivery notes (optional)">
+                </div>
+                <div class="co-field-err" id="dlvErr"></div>
+                <button class="co-pay-btn" style="margin-top:16px;" id="continuePayBtn">Continue to Payment →</button>
+            </div>
+
+            <!-- STEP 2: Payment (hidden until delivery filled) -->
+            <div id="stepPayment" style="display:none">
+                <button class="co-back-btn" id="backDlvBtn">← Back to Delivery</button>
+
+                <!-- Apple Pay -->
+                <div class="quick-btns" style="margin-bottom:10px;">
+                    <button class="apay-btn" id="applePayBtn">
+                        <svg width="18" height="22" viewBox="0 0 814 1000" fill="white"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-42.3-150.2-103.5C161.1 775.8 63.8 665.1 63.8 544.8 63.8 349.7 195.5 240 325.3 240c61.2 0 110.2 40.4 145.8 40.4 33.6 0 87.8-40.4 154.6-40.4 31.1 0 98.6 1.2 146.3 59.5zm-167.8-105.2c27.3-31.9 46.8-76.9 46.8-121.9 0-6.4-.6-12.8-1.9-18.1-44.3 1.9-97.4 29.5-128.8 65.1-24.3 27.5-46.5 72.5-46.5 117.5 0 7.1.6 14.2 1.3 16.4 2.6.6 6.5 1.3 10.3 1.3 40 0 90.3-26.6 118.8-60.3z"/></svg>
+                        Apple Pay
+                    </button>
+                    <button class="gpay-btn" id="googlePayBtn">
+                        <svg width="58" height="24" viewBox="0 0 58 24" fill="none">
+                            <text y="19" font-family="Arial" font-size="18" font-weight="500" fill="#4285F4">G</text>
+                            <text x="13" y="19" font-family="Arial" font-size="18" font-weight="500" fill="#EA4335">o</text>
+                            <text x="24" y="19" font-family="Arial" font-size="18" font-weight="500" fill="#FBBC05">o</text>
+                            <text x="34" y="19" font-family="Arial" font-size="18" font-weight="500" fill="#4285F4">g</text>
+                            <text x="43" y="19" font-family="Arial" font-size="18" font-weight="400" fill="#34A853">l</text>
+                            <text x="48" y="19" font-family="Arial" font-size="18" font-weight="500" fill="#EA4335">e</text>
+                        </svg>
+                        <span style="font-weight:700;font-size:0.82rem;color:#3c4043;">Pay</span>
+                    </button>
+                    <div id="stripePayReqBtn"></div>
+                </div>
+
+                <!-- PayPal -->
+                <div id="ppBtnWrap" style="margin-bottom:14px;min-height:44px;"></div>
+
+                <div class="pay-sep"><span>or pay with card / crypto</span></div>
+
+                <!-- Tabs -->
+                <div class="co-tabs">
+                    <button class="co-tab on" data-tab="Card">💳 Card</button>
+                    <button class="co-tab" data-tab="Crypto">₿ Crypto</button>
+                </div>
+
+                <!-- Card panel -->
+                <div class="co-panel on" id="panelCard">
+                    <input class="card-name-in" type="text" id="cardholderName" placeholder="Cardholder name">
+                    <div class="stripe-wrap" id="stripeCardEl"></div>
+                    <div class="co-card-err" id="cardErr"></div>
+                    <button class="co-pay-btn" id="coPayBtn">Pay <span id="coPayAmt">₪0</span></button>
+                </div>
+
+                <!-- Crypto panel -->
+                <div class="co-panel" id="panelCrypto">
+                    <div class="crypto-list">
+                        <div class="crypto-row">
+                            <span class="cr-icon">₿</span>
+                            <div class="cr-info">
+                                <div class="cr-name">Bitcoin (BTC)</div>
+                                <div class="cr-addr" id="addrBTC">bc1q_YOUR_BTC_WALLET_ADDRESS</div>
+                            </div>
+                            <button class="cr-copy" onclick="copyAddr('addrBTC',this)">Copy</button>
+                        </div>
+                        <div class="crypto-row">
+                            <span class="cr-icon">Ξ</span>
+                            <div class="cr-info">
+                                <div class="cr-name">Ethereum (ETH)</div>
+                                <div class="cr-addr" id="addrETH">0x_YOUR_ETH_WALLET_ADDRESS</div>
+                            </div>
+                            <button class="cr-copy" onclick="copyAddr('addrETH',this)">Copy</button>
+                        </div>
+                        <div class="crypto-row">
+                            <span class="cr-icon">₮</span>
+                            <div class="cr-info">
+                                <div class="cr-name">USDT (TRC-20)</div>
+                                <div class="cr-addr" id="addrUSDT">T_YOUR_USDT_TRC20_ADDRESS</div>
+                            </div>
+                            <button class="cr-copy" onclick="copyAddr('addrUSDT',this)">Copy</button>
+                        </div>
+                    </div>
+                    <p class="crypto-note">Send the exact amount. We'll confirm your order within 30 minutes of receiving payment.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success screen -->
+        <div class="co-success" id="coSuccess">
+            <div class="co-success-star">✦</div>
+            <h2 class="co-success-h">Order Received</h2>
+            <p class="co-success-p" id="coSuccessMsg">Thank you. Uncle Alex will personally confirm your order and be in touch within 24 hours.</p>
+            <button class="co-pay-btn" style="max-width:200px;margin-top:8px;" onclick="closeCheckout()">Done</button>
+        </div>
+    </div>
+</div>
+
+<!-- CART OVERLAY -->
+<div class="cart-overlay" id="cartOverlay"></div>
+
+<!-- CART DRAWER -->
+<div class="cart-drawer" id="cartDrawer">
+    <div class="cart-hdr">
+        <div class="cart-title">Your Order</div>
+        <button class="cart-close-btn" id="cartCloseBtn">✕</button>
+    </div>
+    <div class="cart-body" id="cartBody">
+        <div class="cart-empty">
+            <div class="cart-empty-icon">◇</div>
+            <p>Your cart is empty</p>
+        </div>
+    </div>
+    <div class="cart-foot" id="cartFoot" style="display:none">
+        <div class="cart-total-row">
+            <span class="cart-total-lbl">Total</span>
+            <span class="cart-total-val" id="cartTotalVal">₪0</span>
+        </div>
+        <button class="cart-order-btn" id="cartOrderBtn">Order Now</button>
+        <p class="cart-note">We'll contact you to confirm your order</p>
+    </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 <script>
 // ── PRELOADER ──
@@ -831,15 +1148,284 @@ document.querySelectorAll('.filt').forEach(b => {
     });
 });
 
-// ── CART FEEDBACK ──
-document.querySelectorAll('.pcard-btn,.si-add').forEach(b => {
-    b.addEventListener('click', () => {
-        const orig = b.textContent;
-        b.textContent = b.classList.contains('si-add') ? '✓' : 'Added ✓';
-        b.style.background = '#3a6b3e';
-        setTimeout(() => { b.textContent = orig; b.style.background = ''; }, 1700);
+// ── CART ──
+let cart = [];
+
+function openCart() {
+    document.getElementById('cartDrawer').classList.add('open');
+    document.getElementById('cartOverlay').classList.add('open');
+}
+function closeCart() {
+    document.getElementById('cartDrawer').classList.remove('open');
+    document.getElementById('cartOverlay').classList.remove('open');
+}
+
+function parsePrice(text) {
+    return parseInt(text.replace(/[^\d]/g, '')) || 0;
+}
+
+function getProduct(btn) {
+    if (btn.classList.contains('pcard-btn')) {
+        const card = btn.closest('.pcard');
+        const name = card.querySelector('.pcard-name').textContent.trim();
+        const price = parsePrice(card.querySelector('.pcard-price').textContent);
+        const img = card.querySelector('.pcard-photo');
+        return { name, price, img: img ? img.src : '' };
+    }
+    if (btn.classList.contains('si-add')) {
+        const item = btn.closest('.si');
+        const name = item.querySelector('.si-name').textContent.trim();
+        const price = parsePrice(item.querySelector('.si-price').textContent);
+        const img = item.querySelector('.si-img img');
+        return { name, price, img: img ? img.src : '' };
+    }
+    return null;
+}
+
+function addToCart(product) {
+    const existing = cart.find(i => i.name === product.name);
+    if (existing) existing.qty++;
+    else cart.push({ ...product, qty: 1 });
+    renderCart();
+    openCart();
+}
+
+function changeQty(name, delta) {
+    const item = cart.find(i => i.name === name);
+    if (!item) return;
+    item.qty += delta;
+    if (item.qty <= 0) cart = cart.filter(i => i.name !== name);
+    renderCart();
+}
+
+function renderCart() {
+    const body = document.getElementById('cartBody');
+    const foot = document.getElementById('cartFoot');
+    const totalEl = document.getElementById('cartTotalVal');
+    const countEl = document.getElementById('navCartCount');
+
+    const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+    const totalPrice = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
+    countEl.textContent = totalQty;
+    countEl.classList.toggle('show', totalQty > 0);
+
+    if (cart.length === 0) {
+        body.innerHTML = '<div class="cart-empty"><div class="cart-empty-icon">◇</div><p>Your cart is empty</p></div>';
+        foot.style.display = 'none';
+        return;
+    }
+
+    foot.style.display = 'block';
+    totalEl.textContent = '₪' + totalPrice.toLocaleString();
+
+    body.innerHTML = cart.map(item => {
+        const safeName = item.name.replace(/'/g, "\\'");
+        return `
+        <div class="cart-item">
+            ${item.img
+                ? `<img class="cart-item-img" src="${item.img}" alt="${item.name}" onerror="this.outerHTML='<div class=\\'cart-item-thumb\\'>◈</div>'">`
+                : `<div class="cart-item-thumb">◈</div>`}
+            <div class="cart-item-info">
+                <div class="cart-item-name">${item.name}</div>
+                <div class="cart-item-price">₪${item.price.toLocaleString()} each</div>
+                <div class="cart-item-row">
+                    <div class="cart-qty">
+                        <button class="qty-btn" onclick="changeQty('${safeName}',-1)">−</button>
+                        <span class="qty-num">${item.qty}</span>
+                        <button class="qty-btn" onclick="changeQty('${safeName}',1)">+</button>
+                    </div>
+                    <button class="cart-rm" onclick="changeQty('${safeName}',-${item.qty})">Remove</button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ── CHECKOUT ──
+// 🔑 Replace with your real keys before going live
+const STRIPE_KEY = 'pk_live_YOUR_STRIPE_PUBLISHABLE_KEY';
+const PAYPAL_CID  = 'YOUR_PAYPAL_CLIENT_ID';
+
+let stripe, cardEl, stripeReady = false, paypalLoaded = false;
+let delivery = {};
+
+function orderNow() {
+    if (!cart.length) return;
+    closeCart();
+    buildCheckoutSummary();
+    goToStep(1);
+    document.getElementById('coOverlay').classList.add('open');
+}
+
+function closeCheckout() {
+    document.getElementById('coOverlay').classList.remove('open');
+    document.getElementById('coSuccess').classList.remove('show');
+}
+
+function buildCheckoutSummary() {
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    document.getElementById('coSumTotal').textContent = '₪' + total.toLocaleString();
+    document.getElementById('coPayAmt').textContent = '₪' + total.toLocaleString();
+    document.getElementById('coSumItems').innerHTML = cart.map(item => `
+        <div class="co-sum-item">
+            <div class="co-sum-thumb">
+                ${item.img
+                    ? `<img src="${item.img}" alt="${item.name}" onerror="this.outerHTML='<div class=\\'co-sum-thumb-fb\\'>◈</div>'">`
+                    : `<div class="co-sum-thumb-fb">◈</div>`}
+                <div class="co-sum-qbadge">${item.qty}</div>
+            </div>
+            <div class="co-sum-name">${item.name}</div>
+            <div class="co-sum-price">₪${(item.price * item.qty).toLocaleString()}</div>
+        </div>`).join('');
+}
+
+function goToStep(n) {
+    document.getElementById('stepDelivery').style.display  = n === 1 ? 'block' : 'none';
+    document.getElementById('stepPayment').style.display   = n === 2 ? 'block' : 'none';
+    document.getElementById('stp1Lbl').classList.toggle('on', n === 1);
+    document.getElementById('stp2Lbl').classList.toggle('on', n === 2);
+    if (n === 2) {
+        if (!stripeReady) initStripe();
+        if (!paypalLoaded) initPayPal();
+    }
+}
+
+// Delivery → Payment
+document.getElementById('continuePayBtn').addEventListener('click', () => {
+    const name    = document.getElementById('dlvName').value.trim();
+    const phone   = document.getElementById('dlvPhone').value.trim();
+    const address = document.getElementById('dlvAddress').value.trim();
+    const city    = document.getElementById('dlvCity').value.trim();
+    const country = document.getElementById('dlvCountry').value;
+    const err     = document.getElementById('dlvErr');
+    if (!name || !phone || !address || !city || !country) {
+        err.textContent = 'Please fill in all required delivery fields.'; return;
+    }
+    err.textContent = '';
+    delivery = { name, phone, address, city, country, notes: document.getElementById('dlvNotes').value.trim() };
+    goToStep(2);
+});
+
+document.getElementById('backDlvBtn').addEventListener('click', () => goToStep(1));
+
+function initStripe() {
+    if (typeof Stripe === 'undefined') return;
+    stripeReady = true;
+    stripe = Stripe(STRIPE_KEY);
+    const elements = stripe.elements({
+        appearance: { theme:'night', variables:{ colorPrimary:'#C9A84C', colorBackground:'#0C0906', colorText:'#F5F0E6', colorDanger:'#e05252', fontFamily:'Raleway, sans-serif', borderRadius:'0px' } }
+    });
+    cardEl = elements.create('card', {
+        style: { base:{ color:'#F5F0E6', fontFamily:'Raleway, sans-serif', fontSize:'14px', '::placeholder':{ color:'#8A7060' } }, invalid:{ color:'#e05252' } }
+    });
+    cardEl.mount('#stripeCardEl');
+    const wrap = document.getElementById('stripeCardEl');
+    cardEl.on('focus', () => wrap.classList.add('focused'));
+    cardEl.on('blur',  () => wrap.classList.remove('focused'));
+    cardEl.on('change', e => { document.getElementById('cardErr').textContent = e.error ? e.error.message : ''; });
+
+    // Stripe Payment Request (native Apple Pay / Google Pay when on HTTPS + real key)
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const pr = stripe.paymentRequest({ country:'IL', currency:'ils', total:{ label:'Uncle Alex Cigars', amount: total * 100 }, requestPayerName:true, requestPayerEmail:true });
+    const prBtn = elements.create('paymentRequestButton', { paymentRequest: pr, style:{ paymentRequestButton:{ type:'buy', theme:'dark', height:'44px' } } });
+    pr.canMakePayment().then(result => { if (result) prBtn.mount('#stripePayReqBtn'); });
+    pr.on('paymentmethod', e => { e.complete('success'); showSuccess(); });
+}
+
+function initPayPal() {
+    paypalLoaded = true;
+    const s = document.createElement('script');
+    s.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CID}&currency=ILS&components=buttons`;
+    s.onload = () => {
+        if (typeof paypal === 'undefined') return;
+        paypal.Buttons({
+            style: { layout:'horizontal', color:'gold', shape:'rect', label:'paypal', height:42 },
+            createOrder: (data, actions) => {
+                const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+                return actions.order.create({ purchase_units:[{ amount:{ value: total.toFixed(2), currency_code:'ILS' } }] });
+            },
+            onApprove: (data, actions) => actions.order.capture().then(showSuccess),
+            onError: () => {}
+        }).render('#ppBtnWrap');
+    };
+    document.head.appendChild(s);
+}
+
+// Apple Pay button — uses Stripe Payment Request if available, else friendly message
+document.getElementById('applePayBtn').addEventListener('click', () => {
+    const nativeBtn = document.getElementById('stripePayReqBtn').querySelector('button,iframe');
+    if (nativeBtn) { nativeBtn.click(); return; }
+    alert('Apple Pay is available on Safari on iPhone or Mac with Apple Pay set up, over a secure (HTTPS) connection.');
+});
+
+// Google Pay button — same approach
+document.getElementById('googlePayBtn').addEventListener('click', () => {
+    const nativeBtn = document.getElementById('stripePayReqBtn').querySelector('button,iframe');
+    if (nativeBtn) { nativeBtn.click(); return; }
+    alert('Google Pay is available on Chrome with a saved card, over a secure (HTTPS) connection.');
+});
+
+document.getElementById('coCloseBtn').addEventListener('click', closeCheckout);
+document.getElementById('coOverlay').addEventListener('click', e => { if (e.target.id === 'coOverlay') closeCheckout(); });
+
+// Tab switching
+document.querySelectorAll('.co-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.co-tab').forEach(t => t.classList.remove('on'));
+        document.querySelectorAll('.co-panel').forEach(p => p.classList.remove('on'));
+        tab.classList.add('on');
+        document.getElementById('panel' + tab.dataset.tab).classList.add('on');
     });
 });
+
+// Pay with card
+document.getElementById('coPayBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('coPayBtn');
+    btn.classList.add('busy');
+    btn.innerHTML = '<div class="btn-spin"></div> Processing…';
+    // Production: fetch PaymentIntent client_secret from your backend, then:
+    // const {error} = await stripe.confirmCardPayment(clientSecret, {payment_method:{card:cardEl}});
+    setTimeout(() => { btn.classList.remove('busy'); showSuccess(); }, 1800);
+});
+
+function showSuccess() {
+    const addr = delivery.address ? `${delivery.address}, ${delivery.city}, ${delivery.country}` : '';
+    document.getElementById('coSuccessMsg').textContent =
+        `Thank you${delivery.name ? ', ' + delivery.name : ''}! Your order will be delivered to ${addr || 'you'}. Uncle Alex will confirm within 24 hours.`;
+    document.getElementById('coSuccess').classList.add('show');
+    cart = []; renderCart();
+}
+
+function copyAddr(id, btn) {
+    navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = orig, 1800);
+    });
+}
+
+document.getElementById('navCartBtn').addEventListener('click', openCart);
+document.getElementById('cartCloseBtn').addEventListener('click', closeCart);
+document.getElementById('cartOverlay').addEventListener('click', closeCart);
+document.getElementById('cartOrderBtn').addEventListener('click', orderNow);
+document.getElementById('navCta').addEventListener('click', e => {
+    if (cart.length > 0) { e.preventDefault(); openCart(); }
+});
+
+document.querySelectorAll('.pcard-btn,.si-add').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const product = getProduct(btn);
+        if (!product || !product.price) return;
+        addToCart(product);
+        const orig = btn.textContent;
+        btn.textContent = btn.classList.contains('si-add') ? '✓' : 'Added ✓';
+        btn.style.background = '#3a6b3e';
+        setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1400);
+    });
+});
+
+renderCart();
 
 // ── NEWSLETTER ──
 document.querySelector('.nl-form').addEventListener('submit', e => {
